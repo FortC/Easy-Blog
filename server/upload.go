@@ -1,8 +1,9 @@
 package main
 
 // 头像 / 海报上传：解码 → 盒采样缩小 → JPEG 重编码（自动压缩），存 static/img/ 后重建。
-// POST   /api/admin/upload  (multipart: file, kind=avatar|poster)
-// DELETE /api/admin/upload?kind=avatar|poster
+// 作品附件上传：原样保存（不重编码），存 static/uploads/，Hugo 构建时拷进 public/uploads/。
+// POST   /api/admin/upload  (multipart: file, kind=avatar|poster|attach)
+// DELETE /api/admin/upload?kind=avatar|poster 或 ?kind=attach&file=文件名
 
 import (
 	"fmt"
@@ -10,10 +11,13 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"time"
 )
 
 type uploadSpec struct {
@@ -27,6 +31,10 @@ var uploadKinds = map[string]uploadSpec{
 }
 
 func handleUpload(w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("kind") == "attach" || r.URL.Query().Get("kind") == "attach" {
+		handleAttach(w, r)
+		return
+	}
 	spec, ok := uploadKinds[r.FormValue("kind")]
 	if !ok && r.Method == http.MethodPost {
 		writeJSON(w, http.StatusBadRequest, errStr("kind 只能是 avatar 或 poster"))
@@ -125,6 +133,115 @@ func stamp(st os.FileInfo) string {
 		return "0"
 	}
 	return fmt.Sprintf("%d", st.ModTime().Unix())
+}
+
+/* ---------- 作品附件：原样保存到 static/uploads/，构建后走 public/uploads/ ---------- */
+
+const attachMax = 200 << 20 // 200MB 上限（2G 小机友好）
+
+var (
+	attachNameRe = regexp.MustCompile(`^[\w\-.]+$`)
+	attachExts   = []string{".zip", ".7z", ".rar", ".tar.gz", ".tgz", ".tar", ".gz", ".exe", ".apk", ".dmg", ".pkg", ".deb", ".rpm", ".pdf", ".bin", ".msi"}
+)
+
+func attachExtOK(name string) bool {
+	low := strings.ToLower(name)
+	for _, e := range attachExts {
+		if strings.HasSuffix(low, e) {
+			return true
+		}
+	}
+	return false
+}
+
+func handleAttach(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		r.Body = http.MaxBytesReader(w, r.Body, attachMax)
+		file, fh, err := r.FormFile("file")
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, errStr("没收到文件"))
+			return
+		}
+		defer file.Close()
+		orig := fh.Filename
+		name := filepath.Base(orig)
+		name = strings.Map(func(c rune) rune {
+			switch {
+			case c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c >= '0' && c <= '9', c == '.', c == '-', c == '_':
+				return c
+			default:
+				return '_'
+			}
+		}, name)
+		if !attachNameRe.MatchString(name) || !attachExtOK(name) {
+			writeJSON(w, http.StatusBadRequest, errStr("附件只支持压缩包/安装包/文档（zip、7z、rar、tar.gz、exe、apk、dmg、pdf 等）"))
+			return
+		}
+		final := fmt.Sprintf("%d_%s", time.Now().Unix(), name)
+		full := filepath.Join(siteRoot, "static", "uploads", final)
+		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+			writeJSON(w, http.StatusInternalServerError, errStr("建目录失败"))
+			return
+		}
+		f, err := os.Create(full)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, errStr("写不进去："+err.Error()))
+			return
+		}
+		if _, err := io.Copy(f, file); err != nil {
+			f.Close()
+			os.Remove(full)
+			writeJSON(w, http.StatusInternalServerError, errStr("保存失败（超过 200MB 上限？）"))
+			return
+		}
+		f.Close()
+		st, _ := os.Stat(full)
+		logStr, buildErr := buildSite()
+		if buildErr != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": "附件已存但构建失败", "log": logStr})
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{
+			"ok": true, "built": true,
+			"url":  "/uploads/" + final,
+			"name": orig,
+			"size": humanSize(st.Size()),
+		})
+
+	case http.MethodDelete:
+		name := filepath.Base(r.URL.Query().Get("file"))
+		if !attachNameRe.MatchString(name) {
+			writeJSON(w, http.StatusBadRequest, errStr("文件名不合法"))
+			return
+		}
+		full := filepath.Join(siteRoot, "static", "uploads", name)
+		if _, err := os.Stat(full); err == nil {
+			if err := os.Remove(full); err != nil {
+				writeJSON(w, http.StatusInternalServerError, errStr("删除失败"))
+				return
+			}
+			if _, buildErr := buildSite(); buildErr != nil {
+				writeJSON(w, http.StatusInternalServerError, errStr("已删但重建失败"))
+				return
+			}
+		}
+		writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+
+	default:
+		writeJSON(w, http.StatusMethodNotAllowed, errStr("POST/DELETE only"))
+	}
+}
+
+func humanSize(n int64) string {
+	switch {
+	case n >= 1<<20:
+		return fmt.Sprintf("%.1fMB", float64(n)/(1<<20))
+	case n >= 1<<10:
+		return fmt.Sprintf("%.1fKB", float64(n)/(1<<10))
+	default:
+		return fmt.Sprintf("%dB", n)
+	}
 }
 
 /* 盒采样缩小：把源像素块平均成一个目标像素，透明色垫白（JPEG 无 alpha）。

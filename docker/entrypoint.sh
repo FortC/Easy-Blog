@@ -26,11 +26,10 @@ cp -r "$THEME_SRC/layouts" "$THEME_SRC/assets" "$THEME_SRC/static" "$DATA/"
 
 mkdir -p "$DATA/serverdata"
 
-if [ ! -f "$DATA/public/index.html" ]; then
-  echo "[entrypoint] 构建静态站点…"
-  hugo --minify --source "$DATA" -d "$DATA/public" \
-    || echo "[entrypoint] 首次构建失败：登录 /admin 检查 hugo.yaml 后点「手动重建发布」"
-fi
+# 每次启动都构建：站点构建只要几十毫秒，保证主题/模板升级后不残留旧页面
+echo "[entrypoint] 构建静态站点…"
+hugo --minify --source "$DATA" -d "$DATA/public" \
+  || echo "[entrypoint] 首次构建失败：登录 /admin 检查 hugo.yaml 后点「手动重建发布」"
 
 export LISTEN="${LISTEN:-0.0.0.0:8080}"
 export SITE_ROOT="$DATA"

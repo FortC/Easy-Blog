@@ -61,6 +61,10 @@ func servePublicFile(w http.ResponseWriter, r *http.Request, full string, is404 
 
 	/* 缓存策略与 deploy/nginx-easyblog.conf 保持一致 */
 	switch {
+	case strings.HasPrefix(r.URL.Path, "/uploads/"):
+		/* 附件：显式 octet-stream（容器内没有 mime 表，避免被嗅探成 text），长缓存 */
+		w.Header().Set("Cache-Control", "public, max-age=2592000")
+		w.Header().Set("Content-Type", "application/octet-stream")
 	case strings.HasPrefix(r.URL.Path, "/css/"):
 		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable") // 文件名带 sha256 指纹
 	case strings.HasSuffix(r.URL.Path, ".html") || r.URL.Path == "/":

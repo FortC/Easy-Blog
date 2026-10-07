@@ -321,6 +321,14 @@ input:focus,select:focus,textarea:focus{outline:2px dashed var(--honey);outline-
         <div class="full"><label>介绍（解决了什么问题，一两句）</label><input id="wk-desc"></div>
         <div><label>备用地址（可选，最多两个，如 Gitee）</label><input id="wk-url2" placeholder="https://gitee.com/…"></div>
         <div><label>技术栈（逗号分隔，可选）</label><input id="wk-stack" placeholder="Go, SQLite"></div>
+        <div class="full"><label>附件（软件压缩包，访客可下载，可选，≤200MB）</label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="file" id="wk-attach-file" style="max-width:300px">
+            <button class="btn ghost sm" id="wk-attach-up" type="button">上传附件</button>
+            <button class="btn danger sm" id="wk-attach-del" type="button" style="display:none">移除附件</button>
+            <span class="hint" id="wk-attach-info">上传后卡片会多个「下载」按钮</span>
+          </div>
+        </div>
         <div><label>日期</label><input id="wk-date" type="date"></div>
       </div>
       <div class="actions">
@@ -705,6 +713,23 @@ function loadPosts(){
   }).catch(function(e){ toast(e.message, 1) });
 }
 function fmQuote(v){ return '"' + String(v).replace(/"/g, '\\"') + '"' }
+/* 当天发布的内容用「此刻」当日期（Hugo 默认不构建未来日期的页面，
+   固定写 T10:00/T12:00 会在上午发稿时悄悄隐身）；补录旧日期仍用中午 12 点 */
+function nowLocalISO(){
+  var d = new Date(), p = function(n){ return (n < 10 ? '0' : '') + n };
+  var off = -d.getTimezoneOffset(), sg = off >= 0 ? '+' : '-';
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+    'T' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) +
+    sg + p(Math.floor(Math.abs(off) / 60)) + ':' + p(Math.abs(off) % 60);
+}
+function todayLocal(){
+  var d = new Date(), p = function(n){ return (n < 10 ? '0' : '') + n };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function fmDateFor(picked){
+  picked = picked || todayLocal();
+  return picked === todayLocal() ? nowLocalISO() : picked + 'T12:00:00+08:00';
+}
 function openPost(file){
   api('GET', '/api/admin/content?path=content/' + file).then(function(j){
     editing = { type: 'post', file: file };
@@ -744,7 +769,7 @@ function collectPost(build){
   var date = $('#f-date').value || new Date().toISOString().slice(0, 10);
   var cats = $('#f-cats').value.split(/[,，]/).map(function(s){ return s.trim() }).filter(Boolean);
   var tags = $('#f-tags').value.split(/[,，]/).map(function(s){ return s.trim() }).filter(Boolean);
-  var fm = '---\ntitle: ' + fmQuote($('#f-title').value || name) + '\ndate: ' + fmQuote(date + 'T12:00:00+08:00') + '\n';
+  var fm = '---\ntitle: ' + fmQuote($('#f-title').value || name) + '\ndate: ' + fmQuote(fmDateFor(date)) + '\n';
   if (cats.length) fm += 'categories: [' + cats.join(', ') + ']\n';
   if (tags.length) fm += 'tags: [' + tags.join(', ') + ']\n';
   if ($('#f-desc').value.trim()) fm += 'description: ' + fmQuote($('#f-desc').value.trim()) + '\n';
@@ -916,7 +941,7 @@ $('#toy-save').addEventListener('click', function(){
   if (!slug) slug = 'toy-' + Date.now().toString(36);
   var file = toyEditingFile || ('treasure/' + slug + '.md');
   var fm = '---\ntitle: ' + fmQuote(name) +
-    '\ndate: ' + fmQuote(($('#ty-date').value || new Date().toISOString().slice(0, 10)) + 'T10:00:00+08:00') +
+    '\ndate: ' + fmQuote(fmDateFor($('#ty-date').value)) +
     '\ncat: ' + $('#ty-cat').value;
   if (toyMode === 'link') fm += '\nlayout: redirect\nlink: ' + fmQuote($('#ty-url').value.trim());
   if ($('#ty-desc').value.trim()) fm += '\ndesc: ' + fmQuote($('#ty-desc').value.trim());
@@ -941,6 +966,37 @@ $('#toy-del').addEventListener('click', function(){
 
 /* ================= 作品集（开源项目） ================= */
 var wkEditingFile = null;
+var wkAttach = null; /* {url, name, size} 作品附件 */
+function renderAttach(){
+  var info = $('#wk-attach-info'), del = $('#wk-attach-del');
+  if (wkAttach) {
+    info.textContent = '✓ ' + wkAttach.name + (wkAttach.size ? '（' + wkAttach.size + '）' : '');
+    del.style.display = '';
+  } else {
+    info.textContent = '上传后卡片会多个「下载」按钮';
+    del.style.display = 'none';
+  }
+}
+$('#wk-attach-up').addEventListener('click', function(){
+  var f = $('#wk-attach-file').files[0];
+  if (!f) { toast('先选一个压缩包', 1); return }
+  var btn = this; btn.disabled = true; btn.textContent = '上传中…';
+  var fd = new FormData();
+  fd.append('kind', 'attach'); fd.append('file', f);
+  fetch('/api/admin/upload', { method: 'POST', body: fd })
+    .then(function(r){ return r.json() })
+    .then(function(j){
+      btn.disabled = false; btn.textContent = '上传附件';
+      if (j.error) { toast(j.error, 1); return }
+      wkAttach = { url: j.url, name: j.name, size: j.size };
+      renderAttach();
+      toast('附件已上传，记得「保存并发布」生效');
+    })
+    .catch(function(e){ btn.disabled = false; btn.textContent = '上传附件'; toast('上传失败：' + e.message, 1) });
+});
+$('#wk-attach-del').addEventListener('click', function(){
+  wkAttach = null; renderAttach();
+});
 function loadWorks(){
   api('GET', '/api/admin/posts').then(function(j){
     var box = $('#wk-list');
@@ -973,6 +1029,9 @@ function openWork(p){
     $('#wk-url2').value = fm.link2 || '';
     $('#wk-desc').value = fm.desc || '';
     $('#wk-stack').value = fm.stack || '';
+    wkAttach = fm.attach ? { url: fm.attach, name: fm.attach_name || (fm.attach || '').split('/').pop(), size: fm.attach_size || '' } : null;
+    $('#wk-attach-file').value = '';
+    renderAttach();
     $('#wk-date').value = (fm.date || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
     $('#wk-list-card').style.display = 'none';
     $('#wk-editor').style.display = 'block';
@@ -982,6 +1041,7 @@ function openWork(p){
 $('#new-wk').addEventListener('click', function(){
   wkEditingFile = null;
   $('#wk-name').value = ''; $('#wk-url').value = ''; $('#wk-url2').value = ''; $('#wk-desc').value = ''; $('#wk-stack').value = '';
+  wkAttach = null; $('#wk-attach-file').value = ''; renderAttach();
   $('#wk-date').value = new Date().toISOString().slice(0, 10);
   $('#wk-list-card').style.display = 'none';
   $('#wk-editor').style.display = 'block';
@@ -995,7 +1055,7 @@ $('#wk-save').addEventListener('click', function(){
   if (!slug) slug = 'work-' + Date.now().toString(36);
   var file = wkEditingFile || ('works/' + slug + '.md');
   var fm = '---\ntitle: ' + fmQuote(name) +
-    '\ndate: ' + fmQuote(($('#wk-date').value || new Date().toISOString().slice(0, 10)) + 'T10:00:00+08:00') +
+    '\ndate: ' + fmQuote(fmDateFor($('#wk-date').value)) +
     '\nlink: ' + fmQuote(url) +
     '\nlayout: redirect';
   var url2 = ($('#wk-url2').value || '').trim();
@@ -1005,6 +1065,7 @@ $('#wk-save').addEventListener('click', function(){
   }
   if ($('#wk-desc').value.trim()) fm += '\ndesc: ' + fmQuote($('#wk-desc').value.trim());
   if ($('#wk-stack').value.trim()) fm += '\nstack: ' + fmQuote($('#wk-stack').value.trim());
+  if (wkAttach) fm += '\nattach: ' + fmQuote(wkAttach.url) + '\nattach_name: ' + fmQuote(wkAttach.name || '') + '\nattach_size: ' + fmQuote(wkAttach.size || '');
   fm += '\n---\n';
   api('PUT', '/api/admin/content', { path: 'content/' + file, content: fm, build: true })
     .then(function(j){ afterBuild(j, '作品已上架！'); $('#wk-editor').style.display = 'none'; $('#wk-list-card').style.display = 'block' })

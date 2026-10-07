@@ -36,6 +36,12 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
           </a>
           {{- end }}
+          {{- if .Params.attach }}
+          <a class="work-go dl" href="{{ .Params.attach }}" download>
+            {{- with .Params.attach_name }}{{ . }}{{ else }}下载附件{{ end }}{{ with .Params.attach_size }}（{{ . }}）{{ end }}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          </a>
+          {{- end }}
         </div>
       </div>
       <button class="work-like" type="button" aria-label="给这个作品点赞">

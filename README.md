@@ -21,7 +21,7 @@
 - **🪶 快得离谱** — 全站纯静态，首页 gzip 不到 15KB；2 核 2G 小服务器毫无压力
 - **✍️ 在线写作** — `/admin` 后台写 Markdown，保存后服务器自动 Hugo 构建并原子发布，1-2 秒生效
 - **💬 内置评论** — 访客填昵称就能留言，JSON 文件存储零数据库，前端 textContent 渲染防 XSS
-- **🧩 内容形态丰富** — 文章 / 说说 / 百宝库（好物推荐）/ 作品集（访客可点赞）/ 留言板 / 友链
+- **🧩 内容形态丰富** — 文章 / 说说 / 百宝库（好物推荐）/ 作品集（访客可点赞，支持上传压缩包附件）/ 留言板 / 友链
 - **🤖 AI 助手（可选）** — OpenAI 兼容 / Anthropic 双协议，智谱 GLM、DeepSeek、Kimi、Ollama 都能接
 - **🌓 双主题** — 暖陶土配色 + 深色模式跟随系统，手绘贴纸质感
 - **🔍 SEO 就绪** — canonical、Open Graph、结构化数据、sitemap、RSS 全内置
@@ -170,7 +170,7 @@ Visitors get pages that load instantly; you write posts in the browser and hit p
 - **🪶 Absurdly fast** — fully static pages, homepage under 15KB gzipped; happy on a 1-core 1GB VPS
 - **✍️ Write online** — draft Markdown in the `/admin` panel; saving triggers a Hugo rebuild with atomic publish in 1-2s
 - **💬 Built-in comments** — nickname only, no accounts; JSON-file storage, zero database; XSS-safe textContent rendering
-- **🧩 Rich content types** — posts / short notes / treasure box (recommendations) / works (visitors can upvote) / guestbook / blogroll
+- **🧩 Rich content types** — posts / short notes / treasure box (recommendations) / works (upvotes + downloadable attachments) / guestbook / blogroll
 - **🤖 AI assistant (optional)** — dual protocol (OpenAI-compatible / Anthropic); works with GLM, DeepSeek, Kimi, Qwen, Ollama…
 - **🌓 Dual themes** — warm terracotta palette, dark mode follows the system, hand-drawn sticker textures
 - **🔍 SEO ready** — canonical, Open Graph, structured data, sitemap, RSS out of the box

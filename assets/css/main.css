@@ -373,6 +373,7 @@ a.tag:hover{background:var(--pine);color:var(--paper)}
 .work-gos{display:flex;flex-wrap:wrap;gap:14px}
 .work-go{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--pine-deep);border-bottom:1.5px dashed var(--caramel);padding-bottom:2px;text-decoration:none}
 .work-go.alt{color:var(--caramel-deep);border-bottom-color:var(--pine)}
+.work-go.dl{color:var(--pine);border-bottom-color:var(--pine);border-bottom-style:solid}
 @media(hover:hover){.work-go:hover{transform:translateX(2px)}}
 .work-like{
   position:absolute;top:-13px;right:12px;display:inline-flex;align-items:center;gap:6px;
