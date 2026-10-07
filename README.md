@@ -59,7 +59,12 @@ docker compose up -d --build
 
 ## 🤖 AI 助手（可选）
 
-`.env` 里配任意一家模型服务商，然后把 `hugo.yaml` 的 `params.ai.enabled` 改成 `true`（或后台改），`docker compose up -d` 重启：
+两种配置方式，效果一样：
+
+- **后台直接配（推荐）**——登录 `/admin` → 站点配置 → AI 助手：填协议 / Base URL / 模型名 / API Key，点「测试连通」验证，保存即生效，不用重启；Key 存服务器 `serverdata/ai.json`（0600），前端拿不到
+- **环境变量**——`.env` 里配任意一家模型服务商，`docker compose up -d` 重启：
+
+无论哪种方式，把 `hugo.yaml` 的 `params.ai.enabled` 改成 `true`（或后台同一页勾选）前台才会出现 AI 按钮：
 
 ```ini
 # OpenAI / 智谱 GLM / DeepSeek / Kimi / Qwen 等所有 OpenAI 兼容接口
@@ -208,7 +213,12 @@ Upgrading: `git pull && docker compose up -d --build`. Your content stays in the
 
 ## 🤖 AI Assistant (optional)
 
-Any OpenAI-compatible endpoint or Anthropic. Keys stay server-side; rate-limited per IP.
+Two ways to configure — both equivalent:
+
+- **From the admin panel (recommended)** — `/admin` → Site Config → AI Assistant: pick protocol, fill Base URL / model / API key, hit "Test connection", save. Takes effect immediately without restart; the key is stored server-side only (`serverdata/ai.json`, mode 0600).
+- **Environment variables** — restart with `docker compose up -d` after editing `.env`.
+
+Either way, flip `params.ai.enabled` to `true` to show the chat button on your site. Keys stay server-side; rate-limited per IP.
 
 ```ini
 AI_PROVIDER=openai

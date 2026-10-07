@@ -78,6 +78,8 @@ func main() {
 	mux.HandleFunc("/api/admin/siteconfig", adminOnly(handleSiteConfig))
 	mux.HandleFunc("/api/admin/links", adminOnly(handleLinks))
 	mux.HandleFunc("/api/admin/upload", adminOnly(handleUpload))
+	mux.HandleFunc("/api/admin/aicfg", adminOnly(handleAICfg))
+	mux.HandleFunc("/api/admin/aicfg/test", adminOnly(handleAITest))
 	mux.HandleFunc("/api/admin/build", adminOnly(handleBuild))
 	mux.HandleFunc("/api/admin/comments", adminOnly(handleCommentsAdmin))
 
@@ -98,7 +100,7 @@ func main() {
 		IdleTimeout:       120 * time.Second,
 	}
 	log.Printf("easyblog-server on %s (site=%s admin=%v ai=%v static=%v)",
-		listen, siteRoot, adminPassword != "", aiKey != "", staticServe)
+		listen, siteRoot, adminPassword != "", effectiveAI().APIKey != "", staticServe)
 	log.Fatal(srv.ListenAndServe())
 }
 
@@ -129,7 +131,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"ok":    true,
 		"admin": adminPassword != "",
-		"ai":    aiKey != "",
+		"ai":    effectiveAI().APIKey != "",
 	})
 }
 

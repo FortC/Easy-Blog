@@ -414,6 +414,27 @@ input:focus,select:focus,textarea:focus{outline:2px dashed var(--honey);outline-
           <div class="full"><label>打招呼（访客打开面板看到的第一句）</label><textarea id="c-ai-hello"></textarea></div>
           <div><label>输入框占位提示</label><input id="c-ai-ph" placeholder="问点什么…"></div>
         </div>
+        <div style="border-top:1.5px dashed var(--line);margin:14px 0 12px"></div>
+        <div class="card-hd" style="margin-bottom:10px"><b>模型服务</b>
+          <span class="hint">保存后立即生效，不用重启；Key 只存服务器</span>
+        </div>
+        <div class="fields">
+          <div><label>接口协议</label>
+            <select id="c-ai-provider">
+              <option value="openai">OpenAI 兼容（GLM / DeepSeek / Kimi / Qwen / Ollama…）</option>
+              <option value="anthropic">Anthropic（Claude）</option>
+            </select>
+          </div>
+          <div><label>Base URL</label><input id="c-ai-base" placeholder="https://open.bigmodel.cn/api/paas/v4"></div>
+          <div><label>模型名</label><input id="c-ai-model" placeholder="glm-4-flash"></div>
+          <div><label>API Key（打码显示，留空 = 沿用已保存的）</label><input id="c-ai-key" type="password" autocomplete="new-password"></div>
+          <div><label>单次回复上限（tokens）</label><input id="c-ai-max" placeholder="1024"></div>
+          <div class="full" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn ghost sm" id="c-ai-cfg-save" type="button">保存模型配置</button>
+            <button class="btn ghost sm" id="c-ai-cfg-test" type="button">测试连通</button>
+            <span class="hint" id="c-ai-test-out"></span>
+          </div>
+        </div>
       </div>
       <div class="card">
         <div class="card-hd"><b>关于页正文</b>
@@ -1127,9 +1148,44 @@ function loadSiteCfg(){
     $('#c-ai-hello').value = c.ai_hello || '';
     $('#c-ai-ph').value = c.ai_placeholder || '';
     $('#c-about').value = c.about_body || '';
+    loadAICfg();
     renderNowItems(c.now_items || []);
   });
 }
+function loadAICfg(){
+  api('GET', '/api/admin/aicfg').then(function(c){
+    $('#c-ai-provider').value = c.provider || 'openai';
+    $('#c-ai-base').value = c.base_url || '';
+    $('#c-ai-model').value = c.model || '';
+    $('#c-ai-key').value = c.api_key || '';
+    $('#c-ai-max').value = c.max_tokens || '1024';
+  });
+}
+function collectAICfg(){
+  return {
+    provider: $('#c-ai-provider').value,
+    base_url: $('#c-ai-base').value.trim(),
+    model: $('#c-ai-model').value.trim(),
+    api_key: $('#c-ai-key').value.trim(),
+    max_tokens: $('#c-ai-max').value.trim() || '1024'
+  };
+}
+$('#c-ai-cfg-save').addEventListener('click', function(){
+  var btn = this; btn.disabled = true;
+  api('PUT', '/api/admin/aicfg', collectAICfg())
+    .then(function(j){ btn.disabled = false; toast(j.ready ? '模型配置已保存，可以测连通了' : '已保存，但还没有 Key——前台不会出现 AI'); loadAICfg() })
+    .catch(function(e){ btn.disabled = false; toast(e.message, 1) });
+});
+$('#c-ai-cfg-test').addEventListener('click', function(){
+  var btn = this, out = $('#c-ai-test-out');
+  btn.disabled = true; out.textContent = '测试中…';
+  api('POST', '/api/admin/aicfg/test', collectAICfg())
+    .then(function(j){
+      btn.disabled = false;
+      out.textContent = j.ok ? '✓ 连通 ' + j.ms + 'ms，回复：' + (j.reply || '（空）') : '✗ ' + (j.error || '失败') + '（' + (j.ms || '?') + 'ms）';
+    })
+    .catch(function(e){ btn.disabled = false; out.textContent = '✗ ' + e.message });
+});
 function renderNowItems(items){
   var box = $('#c-now-items');
   box.innerHTML = '';

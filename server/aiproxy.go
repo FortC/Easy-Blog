@@ -86,13 +86,13 @@ func allow(ip string) bool {
 }
 
 // buildUpstream 把统一消息转换为上游请求（body、URL、headers）
-func buildUpstream(messages []msg) (string, http.Header, []byte, error) {
+func buildUpstream(messages []msg, c aiConf) (string, http.Header, []byte, error) {
 	// 截断：保留最近 20 条，防止 token 失控
 	if len(messages) > 20 {
 		messages = messages[len(messages)-20:]
 	}
 
-	switch aiProvider {
+	switch c.Provider {
 	case "anthropic":
 		system := ""
 		rest := make([]msg, 0, len(messages))
@@ -108,9 +108,9 @@ func buildUpstream(messages []msg) (string, http.Header, []byte, error) {
 			rest = append(rest, msg{Role: role, Content: m.Content})
 		}
 		payload := map[string]any{
-			"aiModel":      aiModel,
+			"model":      c.Model,
 			"messages":   rest,
-			"max_tokens": json.Number(aiMaxTok),
+			"max_tokens": json.Number(c.MaxTokens),
 			"stream":     true,
 		}
 		if system != "" {
@@ -122,19 +122,19 @@ func buildUpstream(messages []msg) (string, http.Header, []byte, error) {
 		}
 		h := http.Header{}
 		h.Set("Content-Type", "application/json")
-		h.Set("x-api-key", aiKey)
+		h.Set("x-api-key", c.APIKey)
 		h.Set("anthropic-version", "2023-06-01")
-		url := aiBase + "/v1/messages"
-		if strings.Contains(aiBase, "anthropic.com") {
-			url = aiBase + "/messages"
+		url := c.BaseURL + "/v1/messages"
+		if strings.Contains(c.BaseURL, "anthropic.com") {
+			url = c.BaseURL + "/messages"
 		}
 		return url, h, body, nil
 
 	default: // openai 兼容
 		payload := map[string]any{
-			"aiModel":      aiModel,
+			"model":      c.Model,
 			"messages":   messages,
-			"max_tokens": json.Number(aiMaxTok),
+			"max_tokens": json.Number(c.MaxTokens),
 			"stream":     true,
 		}
 		body, err := json.Marshal(payload)
@@ -143,8 +143,8 @@ func buildUpstream(messages []msg) (string, http.Header, []byte, error) {
 		}
 		h := http.Header{}
 		h.Set("Content-Type", "application/json")
-		h.Set("Authorization", "Bearer "+aiKey)
-		return aiBase + "/chat/completions", h, body, nil
+		h.Set("Authorization", "Bearer "+c.APIKey)
+		return c.BaseURL + "/chat/completions", h, body, nil
 	}
 }
 
@@ -164,7 +164,8 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusTooManyRequests, map[string]string{"error": "too many requests"})
 		return
 	}
-	if aiKey == "" {
+	cfg := effectiveAI()
+	if cfg.APIKey == "" {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "ai not configured"})
 		return
 	}
@@ -183,7 +184,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, header, body, err := buildUpstream(req.Messages)
+	url, header, body, err := buildUpstream(req.Messages, cfg)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "build failed"})
 		return
@@ -242,7 +243,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		var done bool
 		var errText string
 
-		switch aiProvider {
+		switch cfg.Provider {
 		case "anthropic":
 			var ev struct {
 				Type  string `json:"type"`
