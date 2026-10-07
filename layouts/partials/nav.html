@@ -1,5 +1,5 @@
 <nav class="nav" aria-label="主导航">
-  <a class="nav-logo" href="{{ site.Home.RelPermalink }}">{{ site.Params.author }}<b>·</b>手记</a>
+  <a class="nav-logo" href="{{ site.Home.RelPermalink }}">{{ site.Params.author }}<b>·</b>{{ site.Params.posts_label | default "文章" }}</a>
   <div class="nav-right">
     <ul class="nav-links">
       {{- range site.Menus.main }}

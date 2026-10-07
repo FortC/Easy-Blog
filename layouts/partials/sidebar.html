@@ -1,4 +1,4 @@
-{{- /* 侧边栏（文章页会被 TOC 覆盖） */}}
+{{- /* 侧边栏（内容页会被 TOC 覆盖） */}}
 <div class="side">
   <div class="side-card me-card">
     {{- if fileExists "static/img/avatar.jpg" }}
@@ -11,9 +11,10 @@
     <div class="me-stats">
       {{- $posts := where site.RegularPages "Section" "posts" }}
       {{- $says := where site.RegularPages "Section" "sayings" }}
-      <div><b>{{ len $posts }}</b><span>文章</span></div>
+      {{- $works := where site.RegularPages "Section" "works" }}
+      <div><b>{{ len $posts }}</b><span>{{ site.Params.posts_label | default "文章" }}</span></div>
       <div><b>{{ len $says }}</b><span>说说</span></div>
-      <div><b>{{ len site.Taxonomies.tags }}</b><span>标签</span></div>
+      <div><b>{{ len $works }}</b><span>作品</span></div>
     </div>
   </div>
   {{- with site.Params.notice }}

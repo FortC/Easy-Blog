@@ -23,7 +23,7 @@
   </div>
 </div>
 <script>
-window.__AI_CFG={name:{{ $ai.name | jsonify }},hello:{{ $ai.hello | jsonify }},site:{{ site.Title | jsonify }}};
+window.__AI_CFG={name:{{ $ai.name | jsonify }},hello:{{ $ai.hello | jsonify }},site:{{ printf "%s 的%s" site.Params.author (site.Params.posts_label | default "文章") | jsonify }},label:{{ site.Params.posts_label | default "文章" | jsonify }}};
 (function(){
   var fab=document.getElementById('ai-fab'),loaded=false;
   fab.addEventListener('click',function(){

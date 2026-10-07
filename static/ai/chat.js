@@ -66,12 +66,13 @@
     var acc = '';
 
     loadIndex().then(function () {
-      var sys = '你是个人网站「' + (cfg.site || 'Easy Blog') + '」的 AI 导览员' +
+      var LB = cfg.label || '文章';
+      var sys = '你是个人网站「' + (cfg.site || '我的小站') + '」的 AI 导览员' +
         (cfg.name ? '，名字叫' + cfg.name : '') +
         '。语气轻松口语化，答案简洁（尽量 3 句以内），不用列大段清单。\n' +
-        '站点页面：/posts/ 文章、/sayings/ 说说、/treasure/ 百宝库(好物推荐)、/archives/ 归档、/search/ 搜索、/board/ 留言板、/about/ 关于。\n' +
-        (siteIndex ? '现有文章列表：\n' + siteIndex + '\n' : '') +
-        '问题与文章相关就结合列表回答并给出 /posts/xxx/ 路径；无关问题也可以聊，但记住自己的人设。';
+        '站点页面：/posts/ ' + LB + '、/sayings/ 说说、/treasure/ 百宝库(好物推荐)、/archives/ 归档、/search/ 搜索、/board/ 留言板、/about/ 关于。\n' +
+        (siteIndex ? '现有' + LB + '列表：\n' + siteIndex + '\n' : '') +
+        '问题与' + LB + '相关就结合列表回答并给出 /posts/xxx/ 路径；无关问题也可以聊，但记住自己的人设。';
 
       history.push({ role: 'user', content: q });
       var body = JSON.stringify({ messages: [{ role: 'system', content: sys }].concat(history.slice(-12)) });

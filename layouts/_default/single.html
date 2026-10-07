@@ -5,7 +5,7 @@
   {{- /* ================= 文章页 ================= */}}
   <article class="article">
     <nav class="crumb" aria-label="面包屑">
-      <a href="{{ site.Home.RelPermalink }}">首页</a> / <a href="/posts/">手记</a> / {{ .Title }}
+      <a href="{{ site.Home.RelPermalink }}">首页</a> / <a href="/posts/">{{ site.Params.posts_label | default "文章" }}</a> / {{ .Title }}
     </nav>
     <h1>{{ .Title }}</h1>
     <div class="article-meta">

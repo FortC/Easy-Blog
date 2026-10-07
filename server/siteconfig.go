@@ -23,6 +23,7 @@ func readSiteConfig() map[string]any {
 		"site_birth": "", "icp": "", "notice": "", "now_date": "",
 		"seo_google": "", "seo_bing": "", "seo_baidu": "",
 		"now_items": []string{},
+		"ai_enabled": false, "ai_name": "", "ai_hello": "", "ai_placeholder": "",
 	}
 	b, err := os.ReadFile(hugoYamlPath)
 	if err != nil {
@@ -32,12 +33,13 @@ func readSiteConfig() map[string]any {
 		out["title"] = strings.Trim(strings.TrimSpace(m[1]), `"`)
 	}
 	lines := strings.Split(string(b), "\n")
-	inNow := false
+	inNow, inAI := false, false
 	var items []string
 	reKV := regexp.MustCompile(`^\s{2}(\w+):\s*(.*)$`)
 	for _, l := range lines {
 		if m := reKV.FindStringSubmatch(l); m != nil {
 			inNow = m[1] == "now"
+			inAI = m[1] == "ai"
 			if v, ok := out[m[1]]; ok {
 				if _, isStr := v.(string); isStr && m[2] != "" {
 					raw := m[2]
@@ -60,6 +62,22 @@ func readSiteConfig() map[string]any {
 				inNow = false
 			}
 		}
+		if inAI {
+			if m := regexp.MustCompile(`^\s{4}(enabled|name|placeholder):\s*(.*)$`).FindStringSubmatch(l); m != nil {
+				v := strings.Trim(strings.TrimSpace(m[2]), `"`)
+				if m[1] == "enabled" {
+					out["ai_enabled"] = v == "true"
+				} else {
+					out["ai_"+m[1]] = v
+				}
+			}
+			if m := regexp.MustCompile(`^\s{4}hello:\s*(.*)$`).FindStringSubmatch(l); m != nil {
+				out["ai_hello"] = strings.Trim(strings.TrimSpace(m[1]), `"`)
+			}
+			if regexp.MustCompile(`^\S`).MatchString(l) && strings.TrimSpace(l) != "" {
+				inAI = false
+			}
+		}
 	}
 	out["now_items"] = items
 	return out
@@ -71,7 +89,14 @@ func yamlQuote(v string) string {
 	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(v) + `"`
 }
 
-func writeSiteConfig(fields map[string]string, items []string, nowDate string, build bool) (string, bool, error) {
+type aiCfg struct {
+	Enabled     bool   `json:"enabled"`
+	Name        string `json:"name"`
+	Hello       string `json:"hello"`
+	Placeholder string `json:"placeholder"`
+}
+
+func writeSiteConfig(fields map[string]string, items []string, nowDate string, ai *aiCfg, build bool) (string, bool, error) {
 	b, err := os.ReadFile(hugoYamlPath)
 	if err != nil {
 		return "", false, err
@@ -122,6 +147,20 @@ func writeSiteConfig(fields map[string]string, items []string, nowDate string, b
 			}
 			src = regexp.MustCompile(`(?m)^\s{2}now:\n(?:[ \t]+.*\n?)*`).ReplaceAllString(src, nb.String())
 		}
+	}
+	/* ai 块整体重写（若提供了 ai 配置）；块后的空行兜底，正则不会吞掉后面的键 */
+	if ai != nil && regexp.MustCompile(`(?m)^  ai:\n`).MatchString(src) {
+		ab := strings.Builder{}
+		ab.WriteString("  ai:\n")
+		if ai.Enabled {
+			ab.WriteString("    enabled: true\n")
+		} else {
+			ab.WriteString("    enabled: false\n")
+		}
+		ab.WriteString("    name: " + yamlQuote(ai.Name) + "\n")
+		ab.WriteString("    hello: " + yamlQuote(ai.Hello) + "\n")
+		ab.WriteString("    placeholder: " + yamlQuote(ai.Placeholder) + "\n")
+		src = regexp.MustCompile(`(?m)^  ai:\n(?:[ \t]+.*\n?)*`).ReplaceAllString(src, ab.String())
 	}
 	return saveAndBuild(hugoYamlPath, []byte(src), build)
 }
@@ -215,6 +254,7 @@ func handleSiteConfig(w http.ResponseWriter, r *http.Request) {
 			Fields  map[string]string `json:"fields"`
 			NowDate string            `json:"nowDate"`
 			Items   *[]string         `json:"items"`
+			AI      *aiCfg            `json:"ai"`
 			Build   bool              `json:"build"`
 		}
 		if !decodeBody(w, r, &req) {
@@ -230,7 +270,7 @@ func handleSiteConfig(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		logStr, built, err := writeSiteConfig(req.Fields, items, req.NowDate, req.Build)
+		logStr, built, err := writeSiteConfig(req.Fields, items, req.NowDate, req.AI, req.Build)
 		if err != nil {
 			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": "保存或构建失败（已回滚）", "log": logStr + "\n" + err.Error()})
 			return

@@ -1,5 +1,6 @@
 {{ define "main" }}
 {{- $p := site.Params }}
+{{- $label := $p.posts_label | default "文章" }}
 
 {{- /* ============ Hero ============ */}}
 {{- $heroHTML := site.Params.motto | default "把代码写慢，把日子过好。" | htmlEscape }}
@@ -16,7 +17,7 @@
       <p class="sub-en rise d3">— {{ $p.sub_en }}</p>
       <p class="lead rise d3">{{ $p.intro | safeHTML }}</p>
       <div class="hero-cta rise d4">
-        <a class="btn btn-solid" href="/posts/">翻翻手记
+        <a class="btn btn-solid" href="/posts/">翻翻{{ $label }}
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
         <a class="btn btn-ghost" href="/treasure/">直达百宝库
@@ -35,39 +36,45 @@
   </div>
 </header>
 
-{{- /* ============ NOW 便利贴 ============ */}}
-{{- with $p.now }}
-<div class="wrap now-wrap">
+{{- /* ============ 置顶手记 + NOW 便利贴（同行并排） ============ */}}
+{{- $all := where site.RegularPages "Section" "posts" }}
+{{- $pinned := where $all "Params.pin" true }}
+{{- if or $pinned $p.now }}
+<div class="wrap pin-now-row">
+  {{- with $pinned }}
+  <div class="pin-col">
+    {{- range . }}
+    <a class="pick-feature reveal" href="{{ .RelPermalink }}">
+      <span class="pin" aria-hidden="true"></span>
+      <span class="tag alt">置顶</span>
+      <h3>{{ .Title }}</h3>
+      <p>{{ .Summary | plainify | truncate 90 }}</p>
+      <span class="post-meta"><time class="tag plain">{{ .Date.Format "2006-01-02" }}</time>
+      {{- range .GetTerms "categories" }}<span class="tag">{{ .LinkTitle }}</span>{{ end }}
+      </span>
+    </a>
+    {{- end }}
+  </div>
+  {{- end }}
+  {{- with $p.now }}
   <aside class="now rise d5" aria-label="最近在忙">
     <h3>Now<span>最近在忙 · {{ .date }}</span></h3>
     <ul>
       {{- range .items }}<li>{{ . }}</li>{{ end }}
     </ul>
   </aside>
+  {{- end }}
 </div>
 {{- end }}
 
-{{- /* ============ 主体：文章流 + 侧栏 ============ */}}
+{{- /* ============ 主体：手记流 + 侧栏 ============ */}}
 <div class="wrap home-flow">
   <div class="layout">
     <div>
-      {{- $all := where site.RegularPages "Section" "posts" }}
-      {{- $pinned := where $all "Params.pin" true }}
       {{- $pag := .Paginate (where $all "Params.pin" "ne" true) }}
-      {{- range $pinned }}
-      <a class="pick-feature reveal" href="{{ .RelPermalink }}">
-        <span class="pin" aria-hidden="true"></span>
-        <span class="tag alt">置顶</span>
-        <h3>{{ .Title }}</h3>
-        <p>{{ .Summary | plainify | truncate 90 }}</p>
-        <span class="post-meta"><time class="tag plain">{{ .Date.Format "2006-01-02" }}</time>
-        {{- range .GetTerms "categories" }}<span class="tag">{{ .LinkTitle }}</span>{{ end }}
-        </span>
-      </a>
-      {{- end }}
       <header class="sec-head reveal">
         <span class="sec-kicker">Journal</span>
-        <h2>最新手记
+        <h2>最新{{ $label }}
           <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
         </h2>
       </header>
@@ -119,6 +126,32 @@
       {{- $isLink := and .Params.link (not .Content) }}
       <a class="toy"{{ if $isLink }} href="{{ .Params.link }}" target="_blank" rel="noopener"{{ else }} href="{{ .RelPermalink }}"{{ end }}>
         <span class="toy-cat">{{ index (dict "game" "游戏" "tool" "工具" "book" "书与影") (.Params.cat | default "tool") }}{{ if not $isLink }} · 原创{{ end }}</span>
+        <h3>{{ .Title }}</h3>
+        <p class="toy-desc">{{ .Params.desc | default (.Summary | plainify | truncate 40) }}</p>
+      </a>
+      {{- end }}
+    </div>
+  </section>
+  {{- end }}
+
+  {{- /* ============ 作品集精选（仿百宝库） ============ */}}
+  {{- $worksHome := first 3 (where site.RegularPages "Section" "works") }}
+  {{- if $worksHome }}
+  <section class="section reveal" style="padding-top:26px">
+    <header class="sec-head" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px">
+      <div>
+        <span class="sec-kicker">Works</span>
+        <h2>作品集精选
+          <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </h2>
+      </div>
+      <a class="more-link" href="/works/">全部作品 →</a>
+    </header>
+    <div class="trove-mini">
+      {{- range $worksHome }}
+      {{- $stk := split (.Params.stack | default "") "," }}
+      <a class="toy"{{ if .Params.link }} href="{{ .Params.link }}" target="_blank" rel="noopener"{{ else }} href="{{ .RelPermalink }}"{{ end }}>
+        <span class="toy-cat">{{ with $stk }}{{ trim (index $stk 0) " " }}{{ else }}作品{{ end }}</span>
         <h3>{{ .Title }}</h3>
         <p class="toy-desc">{{ .Params.desc | default (.Summary | plainify | truncate 40) }}</p>
       </a>

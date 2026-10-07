@@ -137,7 +137,10 @@ a.tag:hover{background:var(--pine);color:var(--paper)}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 
 /* ---------- NOW 便利贴 ---------- */
-.now-wrap{display:flex;justify-content:flex-end;padding:22px 0 10px}
+.pin-now-row{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr);gap:26px;align-items:start;padding:26px 0 0}
+.pin-now-row .pick-feature{margin-bottom:20px}
+.pin-now-row .pick-feature:last-child{margin-bottom:0}
+.pin-now-row .now{width:100%;margin-top:4px}
 .now{
   width:min(480px,100%);background:var(--caramel-mist);border:1.5px solid var(--ink);
   border-radius:4px 6px 5px 7px;padding:22px 26px 18px;transform:rotate(-1.3deg);
@@ -152,8 +155,8 @@ a.tag:hover{background:var(--pine);color:var(--paper)}
 .now li:last-child{border-bottom:none}
 .now li::before{content:"";position:absolute;left:4px;top:14px;width:11px;height:11px;border:1.5px solid var(--ink);border-radius:3px 4px 3px 5px;background:var(--paper);transform:rotate(-4deg)}
 
-/* ---------- 首页：精选 + 文章流 ---------- */
-.home-flow{padding:64px 0 30px}
+/* ---------- 首页：精选 + 手记流 ---------- */
+.home-flow{padding:34px 0 30px}
 .pick-feature{
   display:block;position:relative;margin-bottom:26px;padding:26px 30px;
   background:var(--paper);border:1.5px solid var(--ink);border-radius:6px 20px 16px 22px;
@@ -552,13 +555,16 @@ footer::before{content:"";display:block;width:150px;margin:0 auto 22px;border-to
   .hero-art{max-width:470px;margin:0 auto}
   .about-grid{grid-template-columns:1fr;gap:36px}
   .article-toc{display:none}
+  .pin-now-row{grid-template-columns:1fr}
+  .pin-now-row .now{margin-top:2px}
 }
 @media(max-width:600px){
   .nav{top:8px;margin-top:8px;padding:6px 8px 6px 14px}
   .nav-links a{padding:5px 9px;font-size:13px}
   .hero{padding-top:44px}
   .hero h1{font-size:30px}
-  .now-wrap{padding:12px 0 4px}
+  .pin-now-row{padding:16px 0 0}
+  .pin-now-row .now{transform:rotate(-.6deg)}
   .post-item{grid-template-columns:1fr;gap:6px;padding:16px 18px}
   .post-no{display:none}
   .post-arrow{display:none}

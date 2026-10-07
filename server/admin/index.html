@@ -401,6 +401,21 @@ input:focus,select:focus,textarea:focus{outline:2px dashed var(--honey);outline-
         </div>
       </div>
       <div class="card">
+        <div class="card-hd"><b>AI 助手</b>
+          <span class="hint">前台右下角的聊天小人；要真正会回答，还需服务器上配好模型 Key（AI_PROVIDER / AI_API_KEY 环境变量）</span>
+        </div>
+        <div class="fields">
+          <div><label>开关</label>
+            <div style="display:flex;gap:8px;align-items:center;padding-top:8px">
+              <input type="checkbox" id="c-ai-on" style="width:auto"><label for="c-ai-on" style="margin:0">在前台显示 AI 助手</label>
+            </div>
+          </div>
+          <div><label>名字</label><input id="c-ai-name" placeholder="如：小满"></div>
+          <div class="full"><label>打招呼（访客打开面板看到的第一句）</label><textarea id="c-ai-hello"></textarea></div>
+          <div><label>输入框占位提示</label><input id="c-ai-ph" placeholder="问点什么…"></div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-hd"><b>首页便利贴「最近在忙」</b>
           <span class="right"><button class="btn ghost sm" id="c-now-add">+ 加一条</button></span>
         </div>
@@ -1099,6 +1114,10 @@ function loadSiteCfg(){
     $('#c-seo-bing').value = c.seo_bing || '';
     $('#c-seo-baidu').value = c.seo_baidu || '';
     $('#c-now-date').value = c.now_date || '';
+    $('#c-ai-on').checked = !!c.ai_enabled;
+    $('#c-ai-name').value = c.ai_name || '';
+    $('#c-ai-hello').value = c.ai_hello || '';
+    $('#c-ai-ph').value = c.ai_placeholder || '';
     renderNowItems(c.now_items || []);
   });
 }
@@ -1131,6 +1150,12 @@ $('#c-save').addEventListener('click', function(){
       intro: $('#c-intro').value, site_birth: $('#c-birth').value, icp: $('#c-icp').value,
       notice: $('#c-notice').value,
       seo_google: $('#c-seo-google').value.trim(), seo_bing: $('#c-seo-bing').value.trim(), seo_baidu: $('#c-seo-baidu').value.trim()
+    },
+    ai: {
+      enabled: $('#c-ai-on').checked,
+      name: $('#c-ai-name').value.trim(),
+      hello: $('#c-ai-hello').value.trim(),
+      placeholder: $('#c-ai-ph').value.trim()
     },
     nowDate: $('#c-now-date').value, items: items, build: true
   }).then(function(j){ afterBuild(j, '设置已发布！') }).catch(function(e){ toast(e.message, 1) });
