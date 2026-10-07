@@ -416,6 +416,14 @@ input:focus,select:focus,textarea:focus{outline:2px dashed var(--honey);outline-
         </div>
       </div>
       <div class="card">
+        <div class="card-hd"><b>关于页正文</b>
+          <span class="hint">支持 Markdown：粗体、列表、引用、链接都会正常渲染</span>
+        </div>
+        <div class="fields">
+          <div class="full"><label>「关于」页面显示的文字</label><textarea id="c-about" style="min-height:150px"></textarea></div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-hd"><b>首页便利贴「最近在忙」</b>
           <span class="right"><button class="btn ghost sm" id="c-now-add">+ 加一条</button></span>
         </div>
@@ -1118,6 +1126,7 @@ function loadSiteCfg(){
     $('#c-ai-name').value = c.ai_name || '';
     $('#c-ai-hello').value = c.ai_hello || '';
     $('#c-ai-ph').value = c.ai_placeholder || '';
+    $('#c-about').value = c.about_body || '';
     renderNowItems(c.now_items || []);
   });
 }
@@ -1157,6 +1166,7 @@ $('#c-save').addEventListener('click', function(){
       hello: $('#c-ai-hello').value.trim(),
       placeholder: $('#c-ai-ph').value.trim()
     },
+    about: $('#c-about').value,
     nowDate: $('#c-now-date').value, items: items, build: true
   }).then(function(j){ afterBuild(j, '设置已发布！') }).catch(function(e){ toast(e.message, 1) });
 });

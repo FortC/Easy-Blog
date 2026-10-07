@@ -80,7 +80,37 @@ func readSiteConfig() map[string]any {
 		}
 	}
 	out["now_items"] = items
+	out["about_body"] = readAboutBody()
 	return out
+}
+
+/* ---------- 关于页正文：content/about.md 的 body（front matter 原样保留） ---------- */
+
+func aboutPath() string { return filepath.Join(siteRoot, "content", "about.md") }
+
+func readAboutBody() string {
+	b, err := os.ReadFile(aboutPath())
+	if err != nil {
+		return ""
+	}
+	if parts := strings.SplitN(string(b), "---", 3); len(parts) >= 3 {
+		return strings.TrimSpace(parts[2])
+	}
+	return strings.TrimSpace(string(b))
+}
+
+func writeAboutBody(body string, build bool) (string, bool, error) {
+	var fm string
+	if b, err := os.ReadFile(aboutPath()); err == nil {
+		if parts := strings.SplitN(string(b), "---", 3); len(parts) >= 3 {
+			fm = "---" + parts[1] + "---\n"
+		}
+	}
+	if fm == "" {
+		fm = "---\ntitle: 关于\nkicker: About\nshow_about_extras: true\ndescription: 关于这个站。\n---\n"
+	}
+	body = strings.ReplaceAll(strings.ReplaceAll(body, "\r\n", "\n"), "\r", "\n")
+	return saveAndBuild(aboutPath(), []byte(fm+body+"\n"), build)
 }
 
 /* ---------- 写入：行级定向替换（注释全保留），失败回滚 ---------- */
@@ -255,6 +285,7 @@ func handleSiteConfig(w http.ResponseWriter, r *http.Request) {
 			NowDate string            `json:"nowDate"`
 			Items   *[]string         `json:"items"`
 			AI      *aiCfg            `json:"ai"`
+			About   *string           `json:"about"`
 			Build   bool              `json:"build"`
 		}
 		if !decodeBody(w, r, &req) {
@@ -267,6 +298,17 @@ func handleSiteConfig(w http.ResponseWriter, r *http.Request) {
 		for k, v := range req.Fields { /* 拦截坏编码，防止把 hugo.yaml 写花 */
 			if strings.ContainsRune(v, 0xFFFD) {
 				writeJSON(w, http.StatusBadRequest, errStr("字段 "+k+" 编码异常，换个输入法/浏览器试试"))
+				return
+			}
+		}
+		/* 关于页正文先落盘（不构建），随后 writeSiteConfig 统一构建一次 */
+		if req.About != nil {
+			if strings.ContainsRune(*req.About, 0xFFFD) {
+				writeJSON(w, http.StatusBadRequest, errStr("关于页正文编码异常，换个输入法/浏览器试试"))
+				return
+			}
+			if _, _, err := writeAboutBody(*req.About, false); err != nil {
+				writeJSON(w, http.StatusInternalServerError, errStr("关于页保存失败：" + err.Error()))
 				return
 			}
 		}
