@@ -1,0 +1,122 @@
+{{ define "main" }}
+{{- $isPost := eq .Section "posts" }}
+<div class="wrap">
+  {{- if $isPost }}
+  {{- /* ================= 文章页 ================= */}}
+  <article class="article">
+    <nav class="crumb" aria-label="面包屑">
+      <a href="{{ site.Home.RelPermalink }}">首页</a> / <a href="/posts/">手记</a> / {{ .Title }}
+    </nav>
+    <h1>{{ .Title }}</h1>
+    <div class="article-meta">
+      <time>{{ .Date.Format "2006 年 01 月 02 日" }}</time>
+      <span>·</span>
+        {{- range .GetTerms "categories" }}<a class="tag" href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>{{ end }}
+      <span>·</span><span>约 {{ .WordCount }} 字 · 读 {{ math.Ceil (div (mul .WordCount 1.0) 300) }} 分钟</span>
+    </div>
+    <div class="layout">
+      <div class="article-body">
+        {{ .Content }}
+        {{- with .Params.tags }}
+        <div class="post-meta" style="margin-top:34px">
+          {{- range $.GetTerms "tags" }}<a class="tag alt" href="{{ .RelPermalink }}"># {{ .LinkTitle }}</a>{{ end }}
+        </div>
+        {{- end }}
+        <nav class="post-nav" aria-label="上下篇">
+          {{- with .NextInSection }}
+          <a href="{{ .RelPermalink }}"><span>← 上一篇</span><b>{{ .Title | truncate 24 }}</b></a>
+          {{- else }}<span></span>{{ end }}
+          {{- with .PrevInSection }}
+          <a class="next" href="{{ .RelPermalink }}"><span>下一篇 →</span><b>{{ .Title | truncate 24 }}</b></a>
+          {{- end }}
+        </nav>
+        {{ partial "comments.html" . }}
+      </div>
+      {{- if .TableOfContents }}
+      <aside class="side article-toc" aria-label="目录">
+        <div class="side-card toc">
+          <h4>目录</h4>
+          {{ .TableOfContents }}
+        </div>
+      </aside>
+      {{- end }}
+    </div>
+  </article>
+
+  {{- else }}
+  {{- /* ================= 普通单页（关于/友链/留言板等） ================= */}}
+  <article class="article" style="padding-top:44px">
+    <header class="sec-head">
+      <span class="sec-kicker">{{ .Params.kicker | default "Page" }}</span>
+      <h1 style="font-size:clamp(26px,3.6vw,34px)">{{ .Title }}
+        <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </h1>
+    </header>
+    <div class="layout">
+      <div class="article-body">
+        {{- /* 关于页：头像 + 海报（后台「站点配置 → 头像/海报」上传，自动压缩） */}}
+        {{- if .Params.show_about_extras }}
+        {{- $hasAvatar := fileExists "static/img/avatar.jpg" }}
+        {{- $hasPoster := fileExists "static/img/poster.jpg" }}
+        {{- if or $hasAvatar $hasPoster }}
+        <div class="about-visual{{ if and $hasAvatar (not $hasPoster) }} solo{{ end }}">
+          {{- if $hasPoster }}<img class="about-poster" src="/img/poster.jpg?v={{ now.Unix }}" alt="海报" loading="lazy">{{ end }}
+          {{- if $hasAvatar }}<img class="about-avatar" src="/img/avatar.jpg?v={{ now.Unix }}" alt="{{ site.Params.author }}" width="110" height="110">{{ end }}
+        </div>
+        {{- end }}
+        {{- end }}
+        {{ .Content }}
+        {{- /* 关于页：技能贴纸墙 + THE RIG */}}
+        {{- if .Params.show_about_extras }}
+        {{- with site.Params.skills }}
+        <div class="stickers" style="margin-top:30px" aria-label="技能">
+          {{- range . }}
+          <span class="sticker{{ with .hot }} hot{{ end }}">{{ .name }}</span>
+          {{- end }}
+        </div>
+        {{- end }}
+        {{- with site.Params.rig }}
+        {{- if .enabled }}
+        <div class="rig">
+          <h4>跑着这个站的机器 / THE RIG</h4>
+          <ul>
+            {{- range .rows }}<li><span>{{ index . 0 }}</span><b>{{ index . 1 }}</b></li>{{ end }}
+          </ul>
+        </div>
+        {{- end }}
+        {{- end }}
+        {{- /* 关于页：联系区 */}}
+        <section class="contact" style="padding:50px 0 20px">
+          <span class="sayhi">Say hi.</span>
+          <h2>说说话？</h2>
+          <p>页面秒开，回信不秒回——但一定回。</p>
+          <div class="contact-actions">
+            <button class="copy-btn" type="button" data-email="{{ site.Params.email }}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span data-copy-label>{{ site.Params.email }}</span>
+            </button>
+            <div class="social">
+              {{- range site.Params.socials }}
+              <a href="{{ .url }}" target="_blank" rel="noopener" aria-label="{{ .name }}" title="{{ .name }}">
+                {{- if eq .icon "github" }}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.11-.74.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12v3.14c0 .3.21.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+                {{- else if eq .icon "gitee" }}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>
+                {{- end }}
+              </a>
+              {{- end }}
+            </div>
+          </div>
+        </section>
+        {{- end }}
+        {{- /* 留言板页：全站评论区（page 用根路径） */}}
+        {{- if eq .File.LogicalName "board.md" }}
+          {{ partial "comments.html" (dict "RelPermalink" "/board/" "Params" .Params) }}
+        {{- end }}
+      </div>
+      {{ partial "sidebar.html" . }}
+    </div>
+  </article>
+  {{- end }}
+</div>
+{{ end }}

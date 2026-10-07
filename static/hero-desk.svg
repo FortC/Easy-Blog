@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 460" fill="none" role="img" aria-label="窗边书桌插画：一个人在月光下写代码，桌上有咖啡，猫蜷成一团">
+  <!-- 拱形背景 -->
+  <path d="M70 452 V242 A210 210 0 0 1 490 242 V452 Z" fill="#F0E0C6"/>
+  <!-- 拱形背景描边（手绘感：仅外侧） -->
+  <path d="M70 452 V242 A210 210 0 0 1 490 242 V452" stroke="#4A3A2E" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- 窗户：拱形 -->
+  <path d="M180 288 V168 A100 100 0 0 1 380 168 V288 Z" fill="#FDF9EF" stroke="#4A3A2E" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- 窗外：月亮 -->
+  <circle cx="342" cy="140" r="17" fill="#AE6444"/>
+  <!-- 窗外：远山两层 -->
+  <path d="M180 232 L232 186 L280 228 L322 194 L380 236 V288 H180 Z" fill="#D9BC92"/>
+  <path d="M180 258 L244 214 L296 252 L342 226 L380 254 V288 H180 Z" fill="#B07A50"/>
+  <!-- 窗框中梃 -->
+  <path d="M280 72 V288 M180 178 H380" stroke="#4A3A2E" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 窗台 -->
+  <rect x="168" y="288" width="224" height="10" rx="5" fill="#4A3A2E"/>
+
+  <!-- 窗台小盆栽 -->
+  <path d="M348 288 v-14" stroke="#4A3A2E" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M348 274 c-4 -12 -16 -14 -18 -24 c8 2 15 8 18 16 c3 -10 10 -16 18 -19 c-2 11 -12 15 -18 27 Z" fill="#B07A50"/>
+
+  <!-- 桌面 -->
+  <rect x="92" y="336" width="376" height="14" rx="7" fill="#AE6444" stroke="#4A3A2E" stroke-width="2.5"/>
+  <!-- 桌腿 -->
+  <path d="M118 350 V420 M442 350 V420" stroke="#4A3A2E" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- 笔记本电脑 -->
+  <rect x="236" y="272" width="104" height="64" rx="6" fill="#4A3A2E"/>
+  <rect x="243" y="279" width="90" height="50" rx="3" fill="#FDF9EF"/>
+  <path d="M262 297 l-7 8 l7 8 M278 297 l7 8 l-7 8 M314 297 l-7 8 l7 8" stroke="#AE6444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -3)"/>
+  <path d="M226 336 h124 l-8 10 h-108 Z" fill="#4A3A2E"/>
+
+  <!-- 小人：坐在桌前 -->
+  <circle cx="185" cy="296" r="20" fill="#FDF9EF" stroke="#4A3A2E" stroke-width="2.5"/>
+  <path d="M167 290 a20 20 0 0 1 36 0 v-6 a18 13 0 0 0 -36 0 Z" fill="#4A3A2E"/>
+  <path d="M178 298 q3 3 6 0 M191 298 q3 3 6 0" stroke="#4A3A2E" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M184 307 q4 3 8 0" stroke="#AE6444" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- 身体 -->
+  <path d="M160 336 v-14 a25 22 0 0 1 50 0 v14 Z" fill="#B07A50" stroke="#4A3A2E" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- 手伸向键盘 -->
+  <path d="M208 320 q16 4 30 10" stroke="#FDF9EF" stroke-width="7" stroke-linecap="round"/>
+  <path d="M208 320 q16 4 30 10" stroke="#4A3A2E" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0"/>
+
+  <!-- 咖啡杯 -->
+  <rect x="386" y="306" width="26" height="30" rx="6" fill="#FDF9EF" stroke="#4A3A2E" stroke-width="2.5"/>
+  <path d="M412 312 q12 2 10 11 q-2 9 -12 9" stroke="#4A3A2E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M393 300 q3 -5 0 -9 M404 300 q3 -5 0 -9" stroke="#D9BC92" stroke-width="2.2" stroke-linecap="round"/>
+
+  <!-- 猫：桌下蜷缩 -->
+  <path d="M150 420 a30 24 0 0 1 60 0 Z" fill="#AE6444" stroke="#4A3A2E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M164 402 l-6 -12 l12 6 Z M196 402 l6 -12 l-12 6 Z" fill="#AE6444" stroke="#4A3A2E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M172 414 q3 2 6 0 M184 414 q3 2 6 0" stroke="#4A3A2E" stroke-width="2" stroke-linecap="round"/>
+  <path d="M210 420 q22 2 18 -16 q-2 -10 -14 -10" stroke="#4A3A2E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- 地面 -->
+  <path d="M84 420 H476" stroke="#4A3A2E" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 10"/>
+
+  <!-- 右下角大叶子绿植 -->
+  <path d="M470 420 v-52" stroke="#4A3A2E" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M470 384 c-22 -4 -34 -20 -34 -40 c20 4 32 20 34 40 Z" fill="#B07A50"/>
+  <path d="M470 396 c22 -6 30 -24 28 -44 c-19 7 -27 24 -28 44 Z" fill="#8C4B31"/>
+  <path d="M470 400 c-14 -12 -16 -30 -8 -46 c12 12 14 31 8 46 Z" fill="#D9BC92"/>
+
+  <!-- 漂浮装饰 -->
+  <path d="M96 120 v14 M89 127 h14" stroke="#AE6444" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="128" cy="88" r="4" fill="#AE6444"/>
+  <circle cx="470" cy="96" r="4" fill="#D9BC92"/>
+  <path d="M502 150 v12 M496 156 h12" stroke="#D9BC92" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M524 260 q4 -8 0 -14 q8 2 12 8" stroke="#AE6444" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+</svg>

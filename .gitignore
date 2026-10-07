@@ -1,0 +1,18 @@
+# 构建产物与本地运行数据
+public/
+public_tmp/
+public_old/
+serverdata/
+resources/
+.hugo_build.lock
+
+# 大二进制
+tools/hugo.exe
+server/easyblog-server.exe
+server/easyblog-server-linux-amd64
+server/clblog-server.exe
+server/clblog-server-linux-amd64
+
+*.log
+.DS_Store
+.env

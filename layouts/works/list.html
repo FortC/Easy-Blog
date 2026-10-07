@@ -1,0 +1,76 @@
+{{ define "main" }}
+{{- /* 作品集：content/works/*.md（后台「作品集」标签发布）；卡片跳开源仓库，贴纸徽章点赞 */}}
+<div class="wrap" style="padding-top:48px">
+  <header class="sec-head">
+    <span class="sec-kicker">Works</span>
+    <h1 style="font-size:clamp(26px,3.6vw,34px)">作品集
+      <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </h1>
+    <p style="color:var(--ink-soft);font-size:14.5px;margin-top:-16px">自己写的小玩意，开源的那种。觉得有用就点个赞，更新全靠它续命。</p>
+  </header>
+
+  <div class="works-grid reveal">
+    {{- range where site.RegularPages "Section" "works" }}
+    {{- $l1 := .Params.link }}
+    {{- $l2 := .Params.link2 }}
+    {{- $n1 := cond (strings.Contains $l1 "gitee.com") "Gitee" (cond (strings.Contains $l1 "github.com") "GitHub" "仓库①") }}
+    {{- $n2 := cond (strings.Contains $l2 "gitee.com") "Gitee" (cond (strings.Contains $l2 "github.com") "GitHub" "仓库②") }}
+    <div class="work-card" data-page="works/{{ .File.ContentBaseName }}">
+      <div class="work-main">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
+          <a href="{{ $l1 }}" target="_blank" rel="noopener">{{ .Title }}</a>
+        </h3>
+        <p class="work-desc">{{ .Params.desc }}</p>
+        {{- with .Params.stack }}
+        <div class="work-stack">
+          {{- range split . "," }}<span class="tag">{{ trim . " " }}</span>{{ end }}
+        </div>
+        {{- end }}
+        <div class="work-gos">
+          <a class="work-go" href="{{ $l1 }}" target="_blank" rel="noopener">{{ $n1 }}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </a>
+          {{- with $l2 }}
+          <a class="work-go alt" href="{{ . }}" target="_blank" rel="noopener">{{ $n2 }}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </a>
+          {{- end }}
+        </div>
+      </div>
+      <button class="work-like" type="button" aria-label="给这个作品点赞">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z"/></svg>
+        <b class="lc">0</b>
+      </button>
+    </div>
+    {{- end }}
+    {{- if not (where site.RegularPages "Section" "works") }}
+    <p class="trove-empty" style="grid-column:1/-1">货架上还空着，第一个作品正在路上。</p>
+    {{- end }}
+  </div>
+</div>
+
+<script>
+(function(){
+  var cards = document.querySelectorAll('.work-card');
+  if (!cards.length) return;
+  fetch('/api/likes').then(function(r){ return r.json() }).then(function(d){
+    cards.forEach(function(c){
+      c.querySelector('.lc').textContent = (d.counts && d.counts[c.dataset.page]) || 0;
+    });
+  }).catch(function(){});
+  cards.forEach(function(c){
+    c.querySelector('.work-like').addEventListener('click', function(){
+      var b = this;
+      b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); /* 点一下弹一下 */
+      var n = b.querySelector('.lc');
+      n.textContent = (+n.textContent || 0) + 1; /* 乐观 +1 */
+      fetch('/api/likes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: c.dataset.page }) })
+        .then(function(r){ if (r.status === 429) throw 0; return r.json() })
+        .then(function(d){ n.textContent = d.count })
+        .catch(function(){});
+    });
+  });
+})();
+</script>
+{{ end }}

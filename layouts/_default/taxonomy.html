@@ -1,0 +1,19 @@
+{{ define "main" }}
+{{- /* 标签云页 /tags/、/categories/ */}}
+<div class="wrap" style="padding-top:48px">
+  <header class="sec-head">
+    <span class="sec-kicker">{{ .Params.kicker | default "Index" }}</span>
+    <h1 style="font-size:clamp(26px,3.6vw,34px)">{{ .Title }}
+      <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </h1>
+  </header>
+  <div class="layout">
+    <div class="tag-cloud reveal" style="gap:12px">
+      {{- range .Data.Terms.ByCount }}
+      <a class="tag" href="{{ .Page.RelPermalink }}" style="font-size:{{ add 12 (mul .Count 2) }}px">{{ .Page.Title }}<sup>{{ .Count }}</sup></a>
+      {{- end }}
+    </div>
+    {{ partial "sidebar.html" . }}
+  </div>
+</div>
+{{ end }}

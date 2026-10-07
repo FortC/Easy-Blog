@@ -1,0 +1,32 @@
+{{ define "main" }}
+{{- /* 归档时间线：按年分组 */}}
+<div class="wrap" style="padding-top:48px">
+  <header class="sec-head">
+    <span class="sec-kicker">Archive</span>
+    <h1 style="font-size:clamp(26px,3.6vw,34px)">归档
+      <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </h1>
+    <p style="color:var(--ink-soft);font-size:14.5px;margin-top:-16px">全部 {{ len (where site.RegularPages "Section" "posts") }} 篇，从新到旧。</p>
+  </header>
+  <div class="layout">
+    <div>
+      {{- $pages := where site.RegularPages "Section" "posts" }}
+      {{- range $pages.GroupByDate "2006" }}
+      <h2 class="archive-year">{{ .Key }}<span style="font-size:14px;color:var(--ink-soft);font-family:var(--font-zh);font-style:normal">{{ len .Pages }} 篇</span></h2>
+      <ul class="archive-list">
+        {{- range .Pages }}
+        <li class="reveal">
+          <a href="{{ .RelPermalink }}">
+            <time>{{ .Date.Format "01-02" }}</time>
+            <b>{{ .Title }}</b>
+            {{- range .GetTerms "categories" | first 1 }}<span class="tag">{{ .LinkTitle }}</span>{{ end }}
+          </a>
+        </li>
+        {{- end }}
+      </ul>
+      {{- end }}
+    </div>
+    {{ partial "sidebar.html" . }}
+  </div>
+</div>
+{{ end }}

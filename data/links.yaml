@@ -1,0 +1,11 @@
+# 友链数据
+# 后台「站点配置 → 友链」可视化编辑，或直接改本文件；name/url/desc 三项
+
+items:
+  - name: "示例友链（点编辑换成你的）"
+    url: "https://example.com/"
+    desc: "把这条换成你朋友的博客"
+
+  - name: "Hugo"
+    url: "https://gohugo.io/"
+    desc: "世界上最快的静态站框架"

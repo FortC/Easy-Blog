@@ -1,0 +1,20 @@
+# 构建产物与本地数据（容器运行时自己生成）
+public/
+public_tmp/
+public_old/
+serverdata/
+
+# 秘密与本地配置（绝不进镜像）
+.env
+
+# 与镜像无关的目录
+.git/
+.zcode/
+tools/
+deploy/
+docs/
+legacy/
+*.md
+!content/**/*.md
+*.log
+docker-compose.yml

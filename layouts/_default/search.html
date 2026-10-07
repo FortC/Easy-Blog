@@ -1,0 +1,52 @@
+{{ define "main" }}
+{{- /* 搜索页：懒加载 /index.json，客户端子串匹配 */}}
+<div class="wrap" style="padding-top:48px;max-width:820px">
+  <header class="sec-head">
+    <span class="sec-kicker">Search</span>
+    <h1 style="font-size:clamp(26px,3.6vw,34px)">搜点什么
+      <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </h1>
+  </header>
+  <div class="search-box">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
+    <input type="search" id="search-input" placeholder="标题、标签、正文… 输入即搜" autocomplete="off" autofocus>
+  </div>
+  <ul class="search-hit" id="search-results" aria-live="polite"></ul>
+  <p class="search-tip" id="search-tip">输入关键词开始搜索。</p>
+  <p class="search-tip" id="search-empty" hidden>没搜到。换个词试试，或者<a href="/board/">留言</a>问我。</p>
+</div>
+<script>
+(function(){
+  var input=document.getElementById('search-input'),results=document.getElementById('search-results'),
+      tip=document.getElementById('search-tip'),empty=document.getElementById('search-empty'),data=null,tmr;
+  input.addEventListener('input',function(){
+    var q=input.value.trim().toLowerCase();
+    if(!data){
+      var s=document.createElement('script');
+      /* 索引很小（几 KB），直接 fetch */
+      fetch('/index.json').then(function(r){return r.json()}).then(function(j){data=j;render(q)});
+      return;
+    }
+    clearTimeout(tmr);tmr=setTimeout(function(){render(q)},120);
+  });
+  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+  function render(q){
+    results.innerHTML='';
+    if(!q){tip.hidden=false;empty.hidden=true;return}
+    tip.hidden=true;
+    var hits=[];
+    for(var i=0;i<data.length;i++){
+      var p=data[i],hay=(p.title+' '+p.tags.join(' ')+' '+p.summary+' '+p.content).toLowerCase();
+      if(hay.indexOf(q)>-1)hits.push(p);
+      if(hits.length>=30)break;
+    }
+    empty.hidden=hits.length>0;
+    for(var j=0;j<hits.length;j++){
+      var h=hits[j],li=document.createElement('li');
+      li.innerHTML='<a href="'+h.url+'"><span class="ctx">'+h.date+' · '+esc(h.tags.join(' / ')||'未分类')+'</span><b>'+esc(h.title)+'</b><p>'+esc(h.summary)+'</p></a>';
+      results.appendChild(li);
+    }
+  }
+})();
+</script>
+{{ end }}

@@ -1,0 +1,34 @@
+# Easy Blog 一键部署：
+#   1. cp .env.example .env  → 改里面的 ADMIN_PASSWORD
+#   2. docker compose up -d --build
+#   3. 打开 http://服务器IP:8080/ 看前台，/admin 进后台
+services:
+  easyblog:
+    build: .
+    image: easyblog:latest
+    container_name: easyblog
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      TZ: Asia/Shanghai
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?先创建 .env（可复制 .env.example）并设置 ADMIN_PASSWORD}
+      ADMIN_SECRET: ${ADMIN_SECRET:-}
+      # ---- AI 助手（可选）：在 .env 里配好后取消注释 ----
+      # AI_PROVIDER: ${AI_PROVIDER:-}
+      # AI_BASE_URL: ${AI_BASE_URL:-}
+      # AI_MODEL: ${AI_MODEL:-}
+      # AI_API_KEY: ${AI_API_KEY:-}
+      # AI_MAX_TOKENS: ${AI_MAX_TOKENS:-1024}
+      # ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-}
+    volumes:
+      - easyblog-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  easyblog-data:

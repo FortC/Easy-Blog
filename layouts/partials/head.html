@@ -1,0 +1,52 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{- /* ---------- 标题 / 描述 ---------- */}}
+{{- $title := cond .IsHome (printf "%s｜%s" site.Params.author site.Params.motto) (printf "%s · %s" .Title site.Title) }}
+<title>{{ $title }}</title>
+{{- $desc := .Params.description | default (.Summary | plainify) | default site.Params.intro }}
+<meta name="description" content="{{ $desc | truncate 150 }}">
+<meta name="author" content="{{ site.Params.author }}">
+{{- with .GetTerms "tags" }}{{ $kw := slice }}{{ range . }}{{ $kw = $kw | append .LinkTitle }}{{ end }}<meta name="keywords" content="{{ delimit $kw "," }}">{{ end }}
+{{- /* ---------- 收录控制 ---------- */}}
+{{- if .Params.noindex }}<meta name="robots" content="noindex, follow">{{ end }}
+{{- /* ---------- canonical ---------- */}}
+<link rel="canonical" href="{{ .Permalink }}">
+{{- /* ---------- Open Graph / Twitter ---------- */}}
+{{- $ogImage := "" }}
+{{- if fileExists "static/img/poster.jpg" }}{{ $ogImage = "poster" }}
+{{- else if fileExists "static/img/avatar.jpg" }}{{ $ogImage = "avatar" }}
+{{- end }}
+<meta property="og:title" content="{{ $title }}">
+<meta property="og:description" content="{{ $desc | truncate 150 }}">
+<meta property="og:type" content="{{ cond .IsHome "website" "article" }}">
+<meta property="og:site_name" content="{{ site.Title }}">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:locale" content="zh_CN">
+{{- with $ogImage }}<meta property="og:image" content="{{ printf "/img/%s.jpg" . | absURL }}">{{ end }}
+{{- if eq .Section "posts" }}{{ with .Date }}<meta property="article:published_time" content="{{ .Format "2006-01-02T15:04:05Z07:00" }}">{{ end }}{{ end }}
+<meta name="twitter:card" content="{{ if eq $ogImage "poster" }}summary_large_image{{ else }}summary{{ end }}">
+{{- /* ---------- 站长平台验证码（后台「站点配置 → SEO」里填） ---------- */}}
+{{- with site.Params.seo_google }}<meta name="google-site-verification" content="{{ . }}">{{ end }}
+{{- with site.Params.seo_bing }}<meta name="msvalidate.01" content="{{ . }}">{{ end }}
+{{- with site.Params.seo_baidu }}<meta name="baidu-site-verification" content="{{ . }}">{{ end }}
+{{- /* ---------- 结构化数据（富摘要） ---------- */}}
+{{- if .IsHome }}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":{{ site.Title | jsonify }},"alternateName":{{ site.Params.author | jsonify }},"url":{{ site.BaseURL | jsonify }},"description":{{ site.Params.intro | jsonify }},"inLanguage":"zh-CN"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":{{ site.Params.author | jsonify }},"url":{{ site.BaseURL | jsonify }},"description":{{ site.Params.motto | jsonify }}{{- $same := slice }}{{- range site.Params.socials }}{{ $same = $same | append .url }}{{- end }}{{ with $same }},"sameAs":{{ $same | jsonify }}{{ end }}}</script>
+{{- else if and (eq .Kind "page") (eq .Section "posts") }}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":{{ .Title | jsonify }},"description":{{ $desc | plainify | jsonify }},"url":{{ .Permalink | jsonify }},"mainEntityOfPage":{{ .Permalink | jsonify }},"datePublished":{{ .Date.Format "2006-01-02T15:04:05Z07:00" | jsonify }},"dateModified":{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" | jsonify }},"wordCount":{{ .WordCount }},"inLanguage":"zh-CN"{{- with $ogImage }},"image":{{ (printf "/img/%s.jpg" .) | absURL | jsonify }}{{- end }},"author":{"@type":"Person","name":{{ site.Params.author | jsonify }}},"publisher":{"@type":"Person","name":{{ site.Params.author | jsonify }}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首页","item":{{ site.BaseURL | jsonify }}},{"@type":"ListItem","position":2,"name":"手记","item":{{ "posts/" | absURL | jsonify }}},{"@type":"ListItem","position":3,"name":{{ .Title | jsonify }},"item":{{ .Permalink | jsonify }}}]}</script>
+{{- end }}
+<meta name="theme-color" content="#F7F1E4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1F1813" media="(prefers-color-scheme: dark)">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%23AE6444"/><path d="M20 22h11a6 6 0 0 1 0 12h-6a6 6 0 0 0 0 12h11" stroke="%23F5F2EA" stroke-width="5" fill="none" stroke-linecap="round"/></svg>'>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{- /* 主题无闪烁：必须在样式表渲染前执行 */}}
+<script>(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.classList.add('js')})();</script>
+{{- $css := resources.Get "css/main.css" | minify | fingerprint "sha256" }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}">
+<link rel="preload" href="/fraunces-600.woff2" as="font" type="font/woff2" crossorigin>
+{{- if .IsHome }}
+<link rel="preload" href="/hero-desk.svg" as="image" fetchpriority="high">
+{{- end }}
+<link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ "index.xml" | relURL }}">

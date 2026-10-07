@@ -1,0 +1,42 @@
+{{- /* 侧边栏（文章页会被 TOC 覆盖） */}}
+<div class="side">
+  <div class="side-card me-card">
+    {{- if fileExists "static/img/avatar.jpg" }}
+    <img class="avatar" src="/img/avatar.jpg?v={{ now.Unix }}" alt="{{ site.Params.author }}" width="74" height="74" loading="lazy">
+    {{- else }}
+    <div class="avatar">{{ substr site.Params.author 0 1 }}</div>
+    {{- end }}
+    <b style="font-size:17px">{{ site.Params.author }}</b>
+    <p class="motto">{{ site.Params.motto }}</p>
+    <div class="me-stats">
+      {{- $posts := where site.RegularPages "Section" "posts" }}
+      {{- $says := where site.RegularPages "Section" "sayings" }}
+      <div><b>{{ len $posts }}</b><span>文章</span></div>
+      <div><b>{{ len $says }}</b><span>说说</span></div>
+      <div><b>{{ len site.Taxonomies.tags }}</b><span>标签</span></div>
+    </div>
+  </div>
+  {{- with site.Params.notice }}
+  <div class="side-card">
+    <h4>公告</h4>
+    <p class="notice-text">{{ . }}</p>
+  </div>
+  {{- end }}
+  <div class="side-card">
+    <h4>标签</h4>
+    <div class="tag-cloud">
+      {{- range first 18 site.Taxonomies.tags.ByCount }}
+        <a class="tag" href="{{ .Page.RelPermalink }}">{{ .Page.Title }}<sup>{{ .Count }}</sup></a>
+      {{- end }}
+    </div>
+  </div>
+  <div class="side-card">
+    <h4>导览</h4>
+    <div class="side-links">
+      <a href="/archives/">归档时间线<i>→</i></a>
+      <a href="/search/">全站搜索<i>→</i></a>
+      <a href="/board/">留言板<i>→</i></a>
+      <a href="/index.xml">RSS 订阅<i>↗</i></a>
+    </div>
+  </div>
+</div>

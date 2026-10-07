@@ -1,0 +1,78 @@
+{{- /* 内置评论：懒加载列表 + 访客留言表单（数据在 easyblog-server，无需 GitHub） */}}
+<section class="cmt-box" id="cmt-box" data-page="{{ .RelPermalink }}">
+  <h4 class="cmt-title">评论 <span id="cmt-count"></span></h4>
+  <ul class="cmt-list" id="cmt-list"></ul>
+  <p class="cmt-empty" id="cmt-empty" hidden>还没有人说话，坐个沙发？</p>
+  <form class="cmt-form" id="cmt-form">
+    <div class="cmt-row">
+      <input type="text" id="cmt-name" placeholder="昵称 *" maxlength="30" required>
+      <input type="url" id="cmt-web" placeholder="网站（可选）" maxlength="100">
+    </div>
+    <!-- 蜜罐：真人看不见，机器人会填 -->
+    <input type="text" id="cmt-company" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+    <textarea id="cmt-text" placeholder="说点什么… *" maxlength="1000" required></textarea>
+    <div class="cmt-actions">
+      <span class="cmt-hint">填昵称就能发，不用注册。站长后台可删。</span>
+      <button class="btn btn-solid" type="submit" id="cmt-send">发出去</button>
+    </div>
+  </form>
+  <noscript><p class="cmt-empty">评论需要 JavaScript。也可以直接<a href="mailto:{{ site.Params.email }}">发邮件</a>。</p></noscript>
+</section>
+<script>
+(function(){
+  var box=document.getElementById('cmt-box');
+  if(!box)return;
+  var list=document.getElementById('cmt-list'),empty=document.getElementById('cmt-empty'),
+      count=document.getElementById('cmt-count'),page=box.dataset.page,loaded=false;
+  function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+  function fmt(ts){var d=new Date(ts*1000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+  function render(c,prepend){
+    var li=document.createElement('li');
+    li.className='cmt';
+    var av=document.createElement('span');av.className='cmt-av';av.textContent=c.name.slice(0,1);li.appendChild(av);
+    var body=document.createElement('div');body.className='cmt-bd';
+    var h=document.createElement('div');h.className='cmt-h';
+    if(c.web){var a=document.createElement('a');a.href=c.web;a.target='_blank';a.rel='noopener nofollow';a.textContent=c.name;h.appendChild(a)}
+    else{var b=document.createElement('b');b.textContent=c.name;h.appendChild(b)}
+    var t=document.createElement('time');t.textContent=fmt(c.ts);h.appendChild(t);
+    body.appendChild(h);
+    var p=document.createElement('p');p.textContent=c.text;body.appendChild(p);
+    li.appendChild(body);
+    prepend?list.insertBefore(li,list.firstChild):list.appendChild(li);
+  }
+  function load(){
+    if(loaded)return;loaded=true;
+    fetch('/api/comments?page='+encodeURIComponent(page)).then(function(r){return r.json()}).then(function(j){
+      var cs=j.comments||[];
+      count.textContent=cs.length?('· '+cs.length):'';
+      empty.hidden=cs.length>0;
+      cs.forEach(function(c){render(c)});
+    }).catch(function(){});
+  }
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.disconnect();load()}})},{rootMargin:'300px'});
+    io.observe(box);
+  }else load();
+
+  var form=document.getElementById('cmt-form'),send=document.getElementById('cmt-send');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=document.getElementById('cmt-name').value.trim(),
+        web=document.getElementById('cmt-web').value.trim(),
+        text=document.getElementById('cmt-text').value.trim(),
+        co=document.getElementById('cmt-company').value;
+    if(!name||!text)return;
+    send.disabled=true;send.textContent='发送中…';
+    fetch('/api/comments',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({page:page,name:name,web:web,text:text,company:co})
+    }).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||'发送失败');return j})})
+    .then(function(j){
+      render(j.comment,true);
+      empty.hidden=true;form.reset();
+      count.textContent=count.textContent?count.textContent.replace(/\d+/,function(n){return +n+1}):'· 1';
+    })
+    .catch(function(err){alert(err.message||('发送失败，稍后再试'))})
+    .then(function(){send.disabled=false;send.textContent='发出去'});
+  });
+})();
+</script>

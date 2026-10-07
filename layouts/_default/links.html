@@ -1,0 +1,47 @@
+{{ define "main" }}
+{{- /* 友链：data/links.yaml 渲染 + 申请友链 */}}
+{{- $links := index (index hugo.Data "links") "items" }}
+<div class="wrap" style="padding-top:48px">
+  <header class="sec-head">
+    <span class="sec-kicker">Neighbors</span>
+    <h1 style="font-size:clamp(26px,3.6vw,34px)">友链
+      <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </h1>
+    <p style="color:var(--ink-soft);font-size:14.5px;margin-top:-16px">互联网上的邻居们，都是好站。</p>
+  </header>
+
+  <div class="link-wall reveal">
+    {{- range $links }}
+    <a class="buddy" href="{{ .url }}" target="_blank" rel="noopener">
+      <span class="buddy-avatar" aria-hidden="true">{{ substr .name 0 1 }}</span>
+      <span><b>{{ .name }}</b><span>{{ .desc }}</span></span>
+    </a>
+    {{- end }}
+  </div>
+
+  {{- /* ---------- 申请友链 ---------- */}}
+  <section class="link-apply reveal">
+    <header class="sec-head" style="margin-bottom:6px">
+      <span class="sec-kicker">Exchange</span>
+      <h2 style="font-size:21px">申请友链</h2>
+    </header>
+    <p style="font-size:14px;color:var(--ink-soft)">互换前先把我加上，然后<b style="color:var(--ink)">发封邮件</b>附上你的站名、链接和一句话介绍，我看到了就回。</p>
+    <div class="apply-info">
+      <span class="buddy-avatar" aria-hidden="true">{{ substr site.Params.author 0 1 }}</span>
+      <div class="apply-meta">
+        <b>{{ site.Title }}</b>
+        <span>{{ site.Params.motto }}</span>
+      </div>
+      <a class="btn btn-solid apply-mail" href="mailto:{{ site.Params.email }}?subject=友链申请">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 6 9 7 9-7"/></svg>
+        {{ site.Params.email }}
+      </a>
+    </div>
+    <ul class="apply-req">
+      <li>独立博客，内容以原创为主（技术/生活/摄影都行）</li>
+      <li>正常更新中，或历史内容足够扎实</li>
+      <li>先友后链：把我加到你的友链页，邮件里说一声位置</li>
+    </ul>
+  </section>
+</div>
+{{ end }}

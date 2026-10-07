@@ -1,0 +1,146 @@
+# ============================================================
+# Easy Blog — Hugo 站点配置
+# 改完记得：有 ★ 标记的必须改成你自己的
+# 也可以部署后在后台「站点配置」里在线改，效果一样
+# ============================================================
+
+baseURL: http://localhost:8080/        # ★ 你的域名（买域名后改这里，如 https://blog.example.com/）
+locale: zh-CN
+title: Easy Blog
+copyright: "© 2026 Easy Blog"
+
+# 标签与分类（模板在 layouts/_default/ 里自定义美化）
+taxonomies:
+  tag: tags
+  category: categories
+
+# 分页
+pagination:
+  pagerSize: 8
+
+# Markdown 渲染
+markup:
+  goldmark:
+    renderer:
+      unsafe: true                    # 允许文章里内联 HTML/SVG
+    parser:
+      wrapStandAloneImageWithinParagraph: false
+  highlight:
+    noClasses: false                  # 代码高亮用 CSS 类（配合深色模式）
+    lineNos: false
+
+# 输出：首页额外输出 JSON 搜索索引
+outputs:
+  home: [HTML, RSS, JSON]
+enableRobotsTXT: true
+
+permalinks:
+  posts: /posts/:slugorfilename/
+
+# 摘要长度（字符）
+summaryLength: 60
+
+# ============================================================
+# 站点参数（模板里通过 site.Params.xxx 读取）
+# ============================================================
+params:
+  # ★ 博主信息
+  author: "Your Name"
+  motto: "把代码写慢， 把日子过好。"
+  hero_mark: "日子"                # 首页大标语里想上荧光笔高亮的几个字，留空则不高亮
+  intro: "你好，我是这个站的主人。这台小服务器跑着纯静态的 Easy Blog——打开就秒开，是它全部的尊严。"
+  sub_en: notes of an easy blogger
+  email: "you@example.com"
+  site_birth: "2026-01-01"
+  icp: ""                           # 有备案号才填，如 "京ICP备00000000号-1"
+
+  # 社交链接（导航页脚用，icon 为内联 SVG 名，可选 github/gitee/rss/mail）
+  socials:
+    - name: GitHub
+      icon: github
+      url: https://github.com/yourname    # ★
+    - name: RSS
+      icon: rss
+      url: /index.xml
+
+  # 技能贴纸（关于页）
+  skills:
+    - { name: Markdown }
+    - { name: Docker }
+    - { name: Linux }
+    - { name: Go }
+    - { name: Hugo }
+    - { name: Nginx }
+    - { name: 写作, hot: true }
+
+  # THE RIG 服务器信息（关于页，不需要可把 enabled 改成 false）
+  rig:
+    enabled: true
+    rows:
+      - [CPU / 内存, 2 核 · 2G 就够]
+      - [系统, 任何能跑 Docker 的机器]
+      - [Web 服务, 内置静态托管]
+      - [月成本, ≈ 1 杯奶茶]
+
+  # 首页 NOW 便利贴（随手更新）
+  now:
+    date: "1 月"
+    items:
+      - "博客刚用 Easy Blog 搭好"
+      - "正在慢慢搬家和写文章"
+      - "欢迎常来坐坐"
+
+  # 公告（侧边栏）
+  notice: "站点刚搭好，慢慢添家具。欢迎常来。"
+
+  # giscus 评论（可选的第三方评论区；整段留空则只用内置评论系统）
+  giscus:
+    repo: ""
+    repoId: ""
+    category: Announcements
+    categoryId: ""
+
+  # AI 助手（需要在服务端配 AI_PROVIDER / AI_API_KEY 等环境变量；enabled: false 则前端按钮隐藏）
+  ai:
+    enabled: false
+    name: 小易
+    hello: 嗨，我是站长的 AI 助手小易。想找文章、要资源推荐，或者单纯聊聊天，都可以～
+    placeholder: 问点什么…（如：这个站怎么写的文章）
+
+  # 站长平台验证码（Google Search Console / Bing Webmaster / 百度搜索资源平台，拿到后填这里或后台填）
+  seo_google: ""
+  seo_bing: ""
+  seo_baidu: ""
+
+# ============================================================
+# 主导航
+# ============================================================
+menu:
+  main:
+    - name: 首页
+      url: /
+      weight: 1
+    - name: 文章
+      url: /posts/
+      weight: 2
+    - name: 说说
+      url: /sayings/
+      weight: 3
+    - name: 百宝库
+      url: /treasure/
+      weight: 4
+    - name: 作品集
+      url: /works/
+      weight: 5
+    - name: 归档
+      url: /archives/
+      weight: 6
+    - name: 友链
+      url: /links/
+      weight: 7
+    - name: 留言
+      url: /board/
+      weight: 8
+    - name: 关于
+      url: /about/
+      weight: 9

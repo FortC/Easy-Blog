@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+{{ partial "head.html" . }}
+</head>
+<body>
+{{ partial "nav.html" . }}
+<main>
+{{ block "main" . }}{{ end }}
+</main>
+{{ partial "footer.html" . }}
+{{ partial "ai.html" . }}
+{{ partial "scripts.html" . }}
+</body>
+</html>

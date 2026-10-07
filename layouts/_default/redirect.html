@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ .Title }} · {{ site.Title }}</title>
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0;url={{ .Params.link }}">
+  <link rel="canonical" href="{{ .Params.link }}">
+</head>
+<body style="font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;background:#F7F1E4;color:#443830">
+  <p style="font-size:15px">跳去 <a href="{{ .Params.link }}" style="color:#8C4B31">{{ .Title }} →</a>…</p>
+</body>
+</html>

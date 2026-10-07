@@ -1,0 +1,44 @@
+{{ define "main" }}
+{{- /* 百宝库：content/treasure/*.md 渲染 + 分类筛选（后台「百宝库」标签发布） */}}
+{{- $catName := dict "game" "游戏" "tool" "工具" "book" "书与影" }}
+{{- $toys := where site.RegularPages "Section" "treasure" }}
+<div class="wrap" style="padding-top:48px">
+  <header class="sec-head">
+    <span class="sec-kicker">Treasure</span>
+    <h1 style="font-size:clamp(26px,3.6vw,34px)">百宝库
+      <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </h1>
+    <p style="color:var(--ink-soft);font-size:14.5px;margin-top:-16px">游戏、工具、好书。捡到宝都放这，全是我自己筛过的。</p>
+  </header>
+  <div class="chips reveal" role="group" aria-label="分类筛选">
+    <button class="chip" data-filter="all" aria-pressed="true">全部</button>
+    <button class="chip" data-filter="game" aria-pressed="false">游戏</button>
+    <button class="chip" data-filter="tool" aria-pressed="false">工具</button>
+    <button class="chip" data-filter="book" aria-pressed="false">书与影</button>
+  </div>
+  <div class="trove reveal">
+    {{- range $toys }}
+    {{- $cat := .Params.cat | default "tool" }}
+    {{- $isLink := and .Params.link (not .Content) }}
+    <a class="toy{{ with .Params.feature }} feature{{ end }}"{{ if $isLink }} href="{{ .Params.link }}" target="_blank" rel="noopener"{{ else }} href="{{ .RelPermalink }}"{{ end }} data-cat="{{ $cat }}">
+      {{- $label := index $catName $cat | default $cat }}
+      <span class="toy-cat">{{ $label }}{{ with .Params.feature }} · 主推{{ end }}{{ if not $isLink }} · 原创{{ end }}</span>
+      <h3>
+        {{- if eq $cat "game" }}
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12h4M8 10v4M15 12h.01M18 10h.01M17.32 5H6.68a4 4 0 0 0-3.98 3.6C2.6 9.4 2 14.5 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.4-1.4a2 2 0 0 1 1.4-.6h4.4a2 2 0 0 1 1.4.6L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.5-.6-6.6-.7-7.4A4 4 0 0 0 17.32 5z"/></svg>
+        {{- else if eq $cat "tool" }}
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        {{- else }}
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></svg>
+        {{- end }}
+        {{ .Title }}
+      </h3>
+      <p class="toy-desc">{{ .Params.desc | default (.Summary | plainify | truncate 48) }}</p>
+      <span class="toy-foot"><svg class="toy-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+    </a>
+    {{- end }}
+    {{- if not $toys }}<p class="trove-empty">这个格子暂时空着，回头补货。</p>{{ end }}
+  </div>
+  <p class="links-more" style="margin-top:26px">想安利我点什么？<a href="mailto:{{ site.Params.email }}">发邮件</a>，好东西直接进库。</p>
+</div>
+{{ end }}

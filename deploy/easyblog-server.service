@@ -1,0 +1,35 @@
+# easyblog-server systemd 服务（站点后台 + 评论 + AI 代理 + 可选静态托管）
+# 适合不想用 Docker 的裸机部署；Docker 用户直接看根目录 docker-compose.yml 即可
+#
+# 安装：
+#   cd server && GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o easyblog-server-linux-amd64 .
+#   sudo cp server/easyblog-server-linux-amd64 /usr/local/bin/easyblog-server
+#   sudo chmod +x /usr/local/bin/easyblog-server
+#   sudo cp deploy/easyblog-server.service /etc/systemd/system/
+#   sudo cp deploy/easyblog.env.example /etc/easyblog.env && sudo chmod 600 /etc/easyblog.env
+#   sudo nano /etc/easyblog.env     # 填 ADMIN_PASSWORD 等
+#   sudo systemctl daemon-reload && sudo systemctl enable --now easyblog-server
+#   curl http://127.0.0.1:8788/api/health   # 应返回 {"ok":true,...}
+#
+# 服务器还需要 hugo 二进制（后台保存文章时自动构建）：
+#   cd /tmp && curl -LO https://github.com/gohugoio/hugo/releases/download/v0.167.0/hugo_extended_0.167.0_linux-amd64.tar.gz
+#   tar xzf hugo_extended_*.tar.gz hugo && sudo mv hugo /usr/local/bin/
+
+[Unit]
+Description=Easy Blog server (admin + comments + AI proxy)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/easyblog-server
+EnvironmentFile=/etc/easyblog.env
+WorkingDirectory=/var/www/easyblog
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
+MemoryMax=128M
+
+[Install]
+WantedBy=multi-user.target

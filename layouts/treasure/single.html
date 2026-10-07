@@ -1,0 +1,36 @@
+{{ define "main" }}
+{{- /* 百宝库 · 原创长文型藏品（站长自己写内容的），排版同文章页 */}}
+{{- $catName := dict "game" "游戏" "tool" "工具" "book" "书与影" }}
+<div class="wrap">
+  <article class="article">
+    <nav class="crumb" aria-label="面包屑">
+      <a href="{{ site.Home.RelPermalink }}">首页</a> / <a href="/treasure/">百宝库</a> / {{ .Title }}
+    </nav>
+    <h1>{{ .Title }}</h1>
+    <div class="article-meta">
+      <time>{{ .Date.Format "2006 年 01 月 02 日" }}</time>
+      <span>·</span>
+      <span class="tag">{{ index $catName (.Params.cat | default "tool") | default "工具" }}</span>
+      <span>·</span><span>约 {{ .WordCount }} 字 · 读 {{ math.Ceil (div (mul .WordCount 1.0) 300) }} 分钟</span>
+    </div>
+    <div class="layout">
+      <div class="article-body">
+        {{ .Content }}
+        <nav class="post-nav" aria-label="返回">
+          <a href="/treasure/"><span>← 回百宝库</span><b>继续翻别的藏品</b></a>
+          <span></span>
+        </nav>
+        {{ partial "comments.html" . }}
+      </div>
+      {{- if .TableOfContents }}
+      <aside class="side article-toc" aria-label="目录">
+        <div class="side-card toc">
+          <h4>目录</h4>
+          {{ .TableOfContents }}
+        </div>
+      </aside>
+      {{- end }}
+    </div>
+  </article>
+</div>
+{{ end }}

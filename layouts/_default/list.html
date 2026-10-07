@@ -1,0 +1,44 @@
+{{ define "main" }}
+{{- /* 文章列表页 /posts/ 及标签、分类下的列表（term.html 会引入本模板的正文块） */}}
+<div class="wrap" style="padding-top:48px">
+  <header class="sec-head">
+    <span class="sec-kicker">{{ .Params.kicker | default "Journal" }}</span>
+    <h1 style="font-size:clamp(26px,3.6vw,34px)">{{ .Title }}
+      <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </h1>
+    {{- with .Content }}{{ . }}{{ end }}
+  </header>
+  <div class="layout">
+    <div>
+      {{- $pag := .Paginate .RegularPagesRecursive }}
+      <ol class="post-list">
+        {{- range $i, $page := $pag.Pages }}
+        {{- $no := printf "%02d" (add (mul (sub $pag.PageNumber 1) $pag.PagerSize) $i 1) }}
+        <li class="reveal">
+          <a class="post-item" href="{{ $page.RelPermalink }}">
+            <span class="post-no" aria-hidden="true">{{ $no }}</span>
+            <span>
+              <span class="post-meta">
+                <time class="tag plain">{{ $page.Date.Format "2006-01-02" }}</time>
+                {{- range .GetTerms "categories" | first 1 }}<span class="tag">{{ .LinkTitle }}</span>{{ end }}
+              </span>
+              <h3>{{ $page.Title }}</h3>
+              <p>{{ $page.Summary | plainify | truncate 64 }}</p>
+            </span>
+            <svg class="post-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </a>
+        </li>
+        {{- end }}
+      </ol>
+      {{- if gt $pag.TotalPages 1 }}
+      <nav class="pager" aria-label="分页">
+        {{- if $pag.HasPrev }}<a href="{{ $pag.Prev.URL }}">←</a>{{ end }}
+        <span class="cur">{{ $pag.PageNumber }} / {{ $pag.TotalPages }}</span>
+        {{- if $pag.HasNext }}<a href="{{ $pag.Next.URL }}">→</a>{{ end }}
+      </nav>
+      {{- end }}
+    </div>
+    {{ partial "sidebar.html" . }}
+  </div>
+</div>
+{{ end }}

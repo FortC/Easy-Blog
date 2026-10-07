@@ -1,0 +1,36 @@
+{{- /* giscus 评论区：未配置则整段不渲染；进入视口才加载脚本（省请求） */}}
+{{- with site.Params.giscus }}
+{{- if and .repo .repoId .categoryId }}
+<section class="giscus-box" id="giscus">
+  <script>
+  (function(){
+    var box=document.getElementById('giscus');
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting)return;
+        io.disconnect();
+        var s=document.createElement('script');
+        s.src='https://giscus.app/client.js';
+        s.setAttribute('data-repo','{{ .repo }}');
+        s.setAttribute('data-repo-id','{{ .repoId }}');
+        s.setAttribute('data-category','{{ default "Announcements" .category }}');
+        s.setAttribute('data-category-id','{{ .categoryId }}');
+        s.setAttribute('data-mapping','pathname');
+        s.setAttribute('data-strict','0');
+        s.setAttribute('data-reactions-enabled','1');
+        s.setAttribute('data-emit-metadata','0');
+        s.setAttribute('data-input-position','top');
+        s.setAttribute('data-theme',document.documentElement.dataset.theme==='dark'?'transparent_dark':'light');
+        s.setAttribute('data-lang','zh-CN');
+        s.setAttribute('data-loading','lazy');
+        s.crossOrigin='anonymous';s.async=true;
+        box.appendChild(s);
+      });
+    },{rootMargin:'200px'});
+    io.observe(box);
+  })();
+  </script>
+  <noscript><p class="giscus-off">评论区需要 JavaScript。也可以直接<a href="mailto:{{ site.Params.email }}">发邮件</a>和我聊。</p></noscript>
+</section>
+{{- end }}
+{{- end }}

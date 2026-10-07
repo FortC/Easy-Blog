@@ -1,0 +1,80 @@
+{{- /* 全站公共脚本：揭示动画 / 主题切换 / TOC 高亮 / 运行天数 / 邮箱复制 */}}
+<script>
+(function(){
+  var d=document,root=d.documentElement;
+  /* 滚动揭示 */
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}});
+    },{threshold:.1,rootMargin:'0px 0px -6% 0px'});
+    d.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach(function(el){io.observe(el)});
+  }else{
+    d.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach(function(el){el.classList.add('in')});
+  }
+  /* 主题切换（同步 giscus） */
+  var tg=d.getElementById('theme-toggle');
+  function paintIcons(){var dark=root.dataset.theme==='dark';
+    var m=tg&&tg.querySelector('.ico-moon'),s=tg&&tg.querySelector('.ico-sun');
+    if(m)m.style.display=dark?'none':'block';if(s)s.style.display=dark?'block':'none';}
+  paintIcons();
+  if(tg)tg.addEventListener('click',function(){
+    var dark=root.dataset.theme==='dark'?'light':'dark';
+    root.dataset.theme=dark;try{localStorage.setItem('theme',dark)}catch(e){}
+    paintIcons();
+    var f=d.querySelector('iframe.giscus-frame');
+    if(f)f.contentWindow.postMessage({giscus:{setConfig:{theme:dark==='dark'?'transparent_dark':'light'}}},'https://giscus.app');
+  });
+  /* TOC 当前标题高亮 */
+  var heads=d.querySelectorAll('.article-body h2[id],.article-body h3[id]');
+  if(heads.length&&'IntersectionObserver' in window){
+    var map={};
+    d.querySelectorAll('.toc a').forEach(function(a){map[a.getAttribute('href').slice(1)]=a});
+    var hio=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          d.querySelectorAll('.toc a.active').forEach(function(a){a.classList.remove('active')});
+          var a=map[e.target.id];if(a)a.classList.add('active');
+        }
+      });
+    },{rootMargin:'-20% 0px -70% 0px'});
+    heads.forEach(function(h){hio.observe(h)});
+  }
+  /* 运行天数 + 年份 */
+  var el=d.getElementById('days');
+  if(el){
+    var birth=new Date('{{ site.Params.site_birth }}'),now=new Date();
+    el.textContent=Math.max(1,Math.floor((now-birth)/864e5)+1);
+  }
+  /* 访问计数：打开页面 +1（同 IP 15 秒内刷新不重复计），回填页脚 */
+  fetch('/api/visit',{method:'POST'}).then(function(r){return r.json()}).then(function(j){
+    var v=d.getElementById('visits');
+    if(v&&j.count!=null)v.textContent=j.count;
+  }).catch(function(){
+    var v=d.getElementById('visits');
+    if(v)v.textContent='—';
+  });
+  /* 百宝库筛选 */
+  var chips=d.querySelectorAll('.chip[data-filter]'),toys=d.querySelectorAll('.toy[data-cat]'),troveEmpty=d.querySelector('.trove-empty');
+  chips.forEach(function(c){
+    c.addEventListener('click',function(){
+      chips.forEach(function(x){x.setAttribute('aria-pressed',x===c?'true':'false')});
+      var f=c.dataset.filter,n=0;
+      toys.forEach(function(t){
+        var show=f==='all'||t.dataset.cat===f;
+        t.classList.toggle('hide',!show);if(show)n++;
+      });
+      if(troveEmpty)troveEmpty.classList.toggle('show',n===0);
+    });
+  });
+  /* 邮箱复制 */
+  var btn=d.querySelector('.copy-btn');
+  if(btn)btn.addEventListener('click',function(){
+    var label=btn.querySelector('[data-copy-label]'),m=btn.dataset.email;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(m).then(function(){
+        label.textContent='已复制 √';setTimeout(function(){label.textContent=m},1600);
+      },function(){location.href='mailto:'+m});
+    }else location.href='mailto:'+m;
+  });
+})();
+</script>

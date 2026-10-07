@@ -1,0 +1,30 @@
+{{ define "main" }}
+{{- /* 说说时间线 */}}
+<div class="wrap" style="padding-top:48px">
+  <header class="sec-head">
+    <span class="sec-kicker">Moments</span>
+    <h1 style="font-size:clamp(26px,3.6vw,34px)">说说
+      <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </h1>
+    <p style="color:var(--ink-soft);font-size:14.5px;margin-top:-16px">三言两语，不成文章。</p>
+  </header>
+  <div class="layout">
+    <ol class="say-list">
+      {{- range .Pages }}
+      <li class="say reveal">
+        <div class="say-head">
+          <span class="avatar" aria-hidden="true">{{ substr site.Params.author 0 1 }}</span>
+          <div>
+            <b>{{ site.Params.author }}</b>
+            <time>{{ .Date.Format "2006-01-02 15:04" }}</time>
+          </div>
+          {{- with .Params.mood }}<span class="mood">{{ . }}</span>{{ end }}
+        </div>
+        <div class="say-content">{{ .Content }}</div>
+      </li>
+      {{- end }}
+    </ol>
+    {{ partial "sidebar.html" . }}
+  </div>
+</div>
+{{ end }}

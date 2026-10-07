@@ -1,0 +1,130 @@
+{{ define "main" }}
+{{- $p := site.Params }}
+
+{{- /* ============ Hero ============ */}}
+{{- $heroHTML := site.Params.motto | default "把代码写慢，把日子过好。" | htmlEscape }}
+{{- $heroHTML = $heroHTML | replaceRE `^(.+?[，！？；])` "$1<br>" }}
+{{- with site.Params.hero_mark }}
+  {{- $m := htmlEscape . }}
+  {{- if and $m (strings.Contains $heroHTML $m) }}{{ $heroHTML = delimit (split $heroHTML $m) (printf "<em>%s</em>" $m) }}{{ end }}
+{{- end }}
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="hi rise d1"><span class="dot"></span>Hi, I'm {{ $p.author }}</span>
+      <h1 class="rise d2">{{ $heroHTML | safeHTML }}</h1>
+      <p class="sub-en rise d3">— {{ $p.sub_en }}</p>
+      <p class="lead rise d3">{{ $p.intro | safeHTML }}</p>
+      <div class="hero-cta rise d4">
+        <a class="btn btn-solid" href="/posts/">翻翻手记
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="/treasure/">直达百宝库
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="hero-art rise d3">
+      <span class="float-a" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 30 30"><path d="M15 4v9M10.5 8.5h9" stroke="#C9973F" stroke-width="2.6" stroke-linecap="round"/><circle cx="15" cy="21" r="3.4" fill="none" stroke="#C9973F" stroke-width="2.6"/></svg></span>
+      <span class="float-b" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 26 26"><path d="M4 18 Q9 12 13 18 T22 17" stroke="#D9BC92" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg></span>
+      <div class="frame">
+        <span class="tape" aria-hidden="true"></span>
+        <img src="/hero-desk.svg" alt="窗边书桌插画：一个人在月光下写代码，桌上有咖啡，猫在桌下蜷成一团" width="560" height="460" fetchpriority="high" decoding="async">
+      </div>
+    </div>
+  </div>
+</header>
+
+{{- /* ============ NOW 便利贴 ============ */}}
+{{- with $p.now }}
+<div class="wrap now-wrap">
+  <aside class="now rise d5" aria-label="最近在忙">
+    <h3>Now<span>最近在忙 · {{ .date }}</span></h3>
+    <ul>
+      {{- range .items }}<li>{{ . }}</li>{{ end }}
+    </ul>
+  </aside>
+</div>
+{{- end }}
+
+{{- /* ============ 主体：文章流 + 侧栏 ============ */}}
+<div class="wrap home-flow">
+  <div class="layout">
+    <div>
+      {{- $all := where site.RegularPages "Section" "posts" }}
+      {{- $pinned := where $all "Params.pin" true }}
+      {{- $pag := .Paginate (where $all "Params.pin" "ne" true) }}
+      {{- range $pinned }}
+      <a class="pick-feature reveal" href="{{ .RelPermalink }}">
+        <span class="pin" aria-hidden="true"></span>
+        <span class="tag alt">置顶</span>
+        <h3>{{ .Title }}</h3>
+        <p>{{ .Summary | plainify | truncate 90 }}</p>
+        <span class="post-meta"><time class="tag plain">{{ .Date.Format "2006-01-02" }}</time>
+        {{- range .GetTerms "categories" }}<span class="tag">{{ .LinkTitle }}</span>{{ end }}
+        </span>
+      </a>
+      {{- end }}
+      <header class="sec-head reveal">
+        <span class="sec-kicker">Journal</span>
+        <h2>最新手记
+          <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </h2>
+      </header>
+      <ol class="post-list">
+        {{- range $i, $page := $pag.Pages }}
+        {{- $no := printf "%02d" (add (mul (sub $pag.PageNumber 1) $pag.PagerSize) $i 1) }}
+        <li class="reveal">
+          <a class="post-item" href="{{ $page.RelPermalink }}">
+            <span class="post-no" aria-hidden="true">{{ $no }}</span>
+            <span>
+              <span class="post-meta">
+                <time class="tag plain">{{ $page.Date.Format "2006-01-02" }}</time>
+                {{- range .GetTerms "categories" | first 1 }}<span class="tag">{{ .LinkTitle }}</span>{{ end }}
+              </span>
+              <h3>{{ $page.Title }}</h3>
+              <p>{{ $page.Summary | plainify | truncate 64 }}</p>
+            </span>
+            <svg class="post-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </a>
+        </li>
+        {{- end }}
+      </ol>
+      {{- if gt $pag.TotalPages 1 }}
+      <nav class="pager" aria-label="分页">
+        {{- if $pag.HasPrev }}<a href="{{ $pag.Prev.URL }}">←</a>{{ end }}
+        <span class="cur">{{ $pag.PageNumber }} / {{ $pag.TotalPages }}</span>
+        {{- if $pag.HasNext }}<a href="{{ $pag.Next.URL }}">→</a>{{ end }}
+      </nav>
+      {{- end }}
+    </div>
+    {{ partial "sidebar.html" . }}
+  </div>
+
+  {{- /* ============ 百宝库精选 ============ */}}
+  {{- $trove := first 3 (where site.RegularPages "Section" "treasure") }}
+  {{- if $trove }}
+  <section class="section reveal" style="padding-top:26px">
+    <header class="sec-head" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px">
+      <div>
+        <span class="sec-kicker">Treasure</span>
+        <h2>百宝库精选
+          <svg class="squiggle" viewBox="0 0 118 10" fill="none" aria-hidden="true"><path d="M2 6 q7 -6 14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0 t14 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </h2>
+      </div>
+      <a class="more-link" href="/treasure/">全部藏品 →</a>
+    </header>
+    <div class="trove-mini">
+      {{- range $trove }}
+      {{- $isLink := and .Params.link (not .Content) }}
+      <a class="toy"{{ if $isLink }} href="{{ .Params.link }}" target="_blank" rel="noopener"{{ else }} href="{{ .RelPermalink }}"{{ end }}>
+        <span class="toy-cat">{{ index (dict "game" "游戏" "tool" "工具" "book" "书与影") (.Params.cat | default "tool") }}{{ if not $isLink }} · 原创{{ end }}</span>
+        <h3>{{ .Title }}</h3>
+        <p class="toy-desc">{{ .Params.desc | default (.Summary | plainify | truncate 40) }}</p>
+      </a>
+      {{- end }}
+    </div>
+  </section>
+  {{- end }}
+</div>
+{{ end }}
